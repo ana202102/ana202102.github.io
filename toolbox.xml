@@ -1,0 +1,47 @@
+<category id="category_custom" name="hjn-block" colour="%{BKY_MYBLOCKS_HUE}">
+  <block type="hjn_stepper" >
+    <value name="IN1">
+      <block type="math_number">
+        <field name="NUM">25</field>
+      </block>
+    </value>
+    <value name="IN2">
+      <block type="math_number">
+        <field name="NUM">26</field>
+      </block>
+    </value>
+    <value name="IN3">
+      <block type="math_number">
+        <field name="NUM">17</field>
+      </block>
+    </value>
+    <value name="IN4">
+      <block type="math_number">
+        <field name="NUM">14</field>
+      </block>
+    </value>
+  </block>
+  <block type="hjn_stepper_step">
+    <value name="Stepper_step">
+      <block type="math_number">
+        <field name="NUM">256</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="hjn_split">
+    <value name="hjn_string">
+      <block type="text">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="hjn_split">
+    </value>
+    <value name="hjn_num">
+      <block type="math_number">
+        <field name="NUM">0</field>
+      </block>
+    </value>
+  </block>
+
+</category>
