@@ -27,6 +27,7 @@ Blockly.Blocks['hjn_stepper'] = {
 Blockly.Blocks['hjn_stepper_step'] = {
   init: function() {
     this.appendDummyInput()
+    .appendField("hjn")
         .appendField("步進馬達")
         .appendField("步數");
     this.appendValueInput("Stepper_step")
