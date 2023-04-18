@@ -12,7 +12,7 @@
     </value>
     <value name="IN3">
       <block type="math_number">
-        <field name="NUM">17</field>
+        <field name="NUM">27</field>
       </block>
     </value>
     <value name="IN4">
