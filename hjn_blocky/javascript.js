@@ -2,7 +2,7 @@ Blockly.Arduino['hjn_stepper'] = function(block) {
 
 
   Blockly.Arduino.definitions_['Stepper_library'] = '#include <Stepper.h>';
-  Blockly.Arduino.definitions_['Stepper_setup'] = 'const int stepsPerRevolution = 512;\n';
+  Blockly.Arduino.definitions_['Stepper_setup'] = 'const int stepsPerRevolution = 2048;\n';
   
 
   var value_in1 = Blockly.Arduino.valueToCode(block, 'IN1', Blockly.Arduino.ORDER_ATOMIC);
