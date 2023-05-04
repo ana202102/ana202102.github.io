@@ -34,7 +34,7 @@ Blockly.Arduino['hjn_split'] = function(block) {
 
   Blockly.Arduino.definitions_['hjn_split_func'] = "String getValue(String data, char separator, int index){\n    int found = 0;\n    int strIndex[] = { 0, -1 };\n    int maxIndex = data.length() - 1;\n    for (int i = 0; i <= maxIndex && found <= index; i++) {\n        if (data.charAt(i) == separator || i == maxIndex) {\n            found++;\n            strIndex[0] = strIndex[1] + 1;\n            strIndex[1] = (i == maxIndex) ? i+1 : i;\n        }\n    }\n    return found > index ? data.substring(strIndex[0], strIndex[1]) : \"error\";\n}\n";
 
-  var code = 'getValue('+value_hjn_string+', '+value_hjn_split+', '+value_hjn_num+');\n';
+  var code = 'getValue('+value_hjn_string+', '+value_hjn_split+', '+value_hjn_num+')';
   // TODO: Change ORDER_NONE to the correct strength.
   return [code, Blockly.Arduino.ORDER_NONE];
 };
