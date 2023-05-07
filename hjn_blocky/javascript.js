@@ -32,7 +32,9 @@ Blockly.Arduino['hjn_split'] = function(block) {
   var value_hjn_num = Blockly.Arduino.valueToCode(block, 'hjn_num', Blockly.Arduino.ORDER_ATOMIC);
   // TODO: Assemble Arduino into code variable.
 
-  Blockly.Arduino.definitions_['hjn_split_func'] = "String getValue(String data, char separator, int index){\n    int found = 0;\n    int strIndex[] = { 0, -1 };\n    int maxIndex = data.length() - 1;\n    for (int i = 0; i <= maxIndex && found <= index; i++) {\n        if (data.charAt(i) == separator || i == maxIndex) {\n            found++;\n            strIndex[0] = strIndex[1] + 1;\n            strIndex[1] = (i == maxIndex) ? i+1 : i;\n        }\n    }\n    return found > index ? data.substring(strIndex[0], strIndex[1]) : \"error\";\n}\n";
+  //Blockly.Arduino.definitions_['hjn_split_func'] = "String getValue(String data, char separator, int index){\n    int found = 0;\n    int strIndex[] = { 0, -1 };\n    int maxIndex = data.length() - 1;\n    for (int i = 0; i <= maxIndex && found <= index; i++) {\n        if (data.charAt(i) == separator || i == maxIndex) {\n            found++;\n            strIndex[0] = strIndex[1] + 1;\n            strIndex[1] = (i == maxIndex) ? i+1 : i;\n        }\n    }\n    return found > index ? data.substring(strIndex[0], strIndex[1]) : \"error\";\n}\n";
+  Blockly.Arduino.definitions_['hjn_split_func'] = "String getValue(String str, char separator, int index) {\n  int count = 0;\n  String subStr;\n  for (int i = 0; i < str.length(); i++) {\n    if (str.charAt(i) == separator) {\n      count++;\n      if (count == index) {\n        break;\n      }\n    } else if (count == index - 1) {\n      subStr += str.charAt(i);\n    }\n  }\n  return subStr;\n}\n";
+
 
   var code = 'getValue('+value_hjn_string+', '+value_hjn_split+', '+value_hjn_num+')';
   // TODO: Change ORDER_NONE to the correct strength.
