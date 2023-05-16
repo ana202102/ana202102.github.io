@@ -178,14 +178,14 @@ let sketch = function(p){
       }
     }
 
-    fill_H_Value.html("fill hue: " + fill_H_Slider.value());
-    fill_S_Value.html("fill saturation: " + fill_S_Slider.value());
-    fill_B_Value.html("fill brightness: " + fill_B_Slider.value());
+    fill_H_Value.html("fill 色相: " + fill_H_Slider.value());
+    fill_S_Value.html("fill 飽和度: " + fill_S_Slider.value());
+    fill_B_Value.html("fill 明度: " + fill_B_Slider.value());
     fill_O_Value.html("fill opacity: " + fill_O_Slider.value());
 
-    stroke_H_Value.html("stroke hue: " + stroke_H_Slider.value());
-    stroke_S_Value.html("stroke saturation: " + stroke_S_Slider.value());
-    stroke_B_Value.html("stroke brightness: " + stroke_B_Slider.value());
+    stroke_H_Value.html("stroke 色相: " + stroke_H_Slider.value());
+    stroke_S_Value.html("stroke 飽和度: " + stroke_S_Slider.value());
+    stroke_B_Value.html("stroke 明度: " + stroke_B_Slider.value());
     stroke_O_Value.html("stroke opacity: " + stroke_O_Slider.value());
   }
 
