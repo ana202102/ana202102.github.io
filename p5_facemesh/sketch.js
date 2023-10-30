@@ -104,6 +104,22 @@ let sketch = function(p){
     stroke_O_Slider = p.createSlider(0, 100, 100, 5);
     stroke_O_Slider.class('Slider');
 
+
+    complete_button = p.createButton("complete");
+    complete_button.mousePressed(p.complete);
+    complete_button.class("Buttons");
+    complete_button.id("complete_button");
+
+    undo_button = p.createButton("undo");
+    undo_button.mousePressed(p.undo);
+    undo_button.class("Buttons");
+    undo_button.id("undo_button");
+
+    delete_button = p.createButton("delete");
+    delete_button.mousePressed(p.deleteDrawing);
+    delete_button.class("Buttons");
+    delete_button.id("delete_button");
+	  
     screenshot_button = p.createButton("");
     screenshot_button.mousePressed(p.screenShot);
     screenshot_button.class("imageButtons");
@@ -124,20 +140,6 @@ let sketch = function(p){
     index_DOWN_button.class("imageButtons");
     index_DOWN_button.id("index_DOWN_button");
 
-    complete_button = p.createButton("complete");
-    complete_button.mousePressed(p.complete);
-    complete_button.class("Buttons");
-    complete_button.id("complete_button");
-
-    undo_button = p.createButton("undo");
-    undo_button.mousePressed(p.undo);
-    undo_button.class("Buttons");
-    undo_button.id("undo_button");
-
-    delete_button = p.createButton("delete");
-    delete_button.mousePressed(p.deleteDrawing);
-    delete_button.class("Buttons");
-    delete_button.id("delete_button");
 
     tParameters = {
       fill_H : fill_H_Slider.value(),
