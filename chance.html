@@ -1,0 +1,164 @@
+<html>
+	<head>
+		<style type="text/css">
+			.help {}
+			#result { font-weight:bold; font-size: 24px;background-color:yellow;}
+			a:visited { color:blue; }
+			.main { font-size:22px; }
+			#title, #total,#str,#num { width:400px; height:2em;}
+			.help { cursor:pointer; }
+			#input-str { position:relative; }
+			#input-str span { position:absolute; }
+		</style>
+</head>
+<body>
+
+<div class="main">
+	<h1>公平隨機抽獎產生器</h1>
+	抽獎標題： <input id="title" type="text" /><br>
+	參加人數：<input type="text" id="total" value="" /><br>
+	抽幾個人：<input type="text" id="num" value="1" /><br>
+	由這串字來計算隨機： <input id="str" type="text" value="" /> <span class="help" data-target="input-str">(?)</span><br>
+	<input type="button" value="產生" id="gen" /><br>
+	<div id="result"></div>
+</div>
+
+	<a href="" id="permalink" />永久連結</a> | <a href="#" target="_blank" id="tinyurl">短網址</a>
+	<div class="summary">
+		<ul>
+			<li>歡迎任何抽獎活動利用此一頁面來產生公平的抽獎方法和結果。</li>
+			<li>這是一個簡單且公開的計算方式，有興趣歡迎查看HTML原始碼</li>
+			<li id="input-str"><span>隨機的字串必需要<b>事先公布未來要用什麼來計算隨機的方式</b>，且<b>主辦單位和參加者都無法操控</b>。 <br>
+				例如：7/1~7/31報名抽獎，在 7/1 前必需先公布以 Yahoo!奇摩在 8/1 12:00 的第一個新聞標題來計算抽獎結果</span></li>
+		</ul>
+	</div>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="https://raw.github.com/placemarker/jQuery-MD5/master/jquery.md5.js"></script>
+<script>
+function hexdec (hex_string) {
+    // Returns the decimal equivalent of the hexadecimal number  
+    // 
+    // version: 1109.2015
+    // discuss at: http://phpjs.org/functions/hexdec
+    // +   original by: Philippe Baumann
+    // *     example 1: hexdec('that');
+    // *     returns 1: 10
+    // *     example 2: hexdec('a0');
+    // *     returns 2: 160
+    hex_string = (hex_string + '').replace(/[^a-f0-9]/gi, '');
+    return parseInt(hex_string, 16);
+}
+</script>
+<script>
+	$(".help").click(function(){
+		console.log(id);
+		var id = $(this).data('target');
+		$("#"+id+ " > span").animate({"left": "+=50px"}, "slow").animate({"left": "-=50px"}, "slow");
+	});
+
+	var fields = ["title", "str", "total", "num"];
+	
+	// parse hash
+	var m = location.href.match(/#(.+)/);
+	if(m!==null)
+	{
+		var qs = m[1];
+		for(var i=0; i < fields.length; i++)
+		{
+			var id = fields[i];
+			m = qs.match(new RegExp("&?" + id + "=([^&]+)"));
+			if(m!==null)
+				$("#" + id).val(decodeURIComponent(m[1]));
+
+		}
+		setTimeout(function(){
+			$("#gen").trigger('click');
+		}, 500);
+	}
+
+	$("#gen").click(function(){
+		var title = $("#title").val(),
+			str = $("#str").val(),
+			total = $("#total").val(),
+			num = $("#num").val();
+			if(str=="")
+			{
+				alert("請輸入一個字串");
+				$("#str").focus();
+				return;
+			}
+			else if(total.match(/^\d+$/)==null)
+			{
+				alert("請輸入數字");
+				$("#total").focus();
+				return;
+			}
+			else if(num.match(/^\d+$/)==null)
+			{
+				alert("請輸入數字");
+				$("#num").focus();
+				return;
+			}
+			
+			num = parseInt(num);
+			total = parseInt(total);
+			
+			if(num > total)
+			{
+				alert('人數不合理'+num+"#"+total);
+				return;
+			}
+
+			var candidates = new Array();
+			for(var i=1; i<= total; i++)
+			{
+				candidates.push(i);
+			}
+			//console.log(candidates.join(','));
+
+			var result = [];
+			for(var i=1; i <= num; i++)
+			{
+				var hash = $.md5(str + i),
+				hash_num = hexdec(hash.substring(0,10)),
+				rand = hash_num % candidates.length;
+				//console.log((str+i) + "#" +hash,"#", hash_num,"#",rand,"#",candidates);
+				result.push(
+					candidates.splice( rand, 1)
+					);
+			}
+			$("#result").html("抽中的人是第 " + result.join(", ") + " 位");
+
+	});
+
+	// update permalink
+	$("#" + fields.join(",#")).bind("keyup change", function(){
+		var qs = [];
+		for(var i=0; i< fields.length; i++)
+		{
+			var id = fields[i];
+			var val = $("#"+id).val();
+			if(val!='')
+				qs.push(id + "=" + encodeURIComponent(val));
+				
+		}
+		if(qs.length > 0)
+		{
+			qs = qs.join('&');
+			$("#permalink").attr('href', location.href.split("#")[0] + "#" + qs);
+			location.hash = qs;
+		}
+	});
+
+	// init permalink
+	$("#permalink").attr('href', location.href);
+
+	$("#tinyurl").click(function(){
+		$(this).attr('href', "http://ppt.cc/gen.php?r=1&t=1&s=" + encodeURIComponent(location.href));
+	});
+
+</script>
+
+</body>
+</html>
