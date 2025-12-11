@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLA 模型分形生長動畫</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 設定字體為 Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        #dlaCanvas {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 4px solid #3b82f6; /* 藍色邊框 */
+            background-color: #1f2937; /* 深藍灰色背景 */
+            border-radius: 1rem; /* 圓角 */
+        }
+        .control-panel {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container max-w-4xl mx-auto flex flex-col lg:flex-row gap-8 items-center lg:items-start p-4">
+
+    <!-- 控制面板 -->
+    <div class="control-panel w-full lg:w-1/3">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">電化學 DLA 模擬器 (短路停止機制)</h1>
+        <p class="text-sm text-gray-600 mb-6">模擬帶正電離子在擴散和電場漂移的雙重作用下，從底部負極向上生長。</p>
+
+        <!-- 模擬控制按鈕 (移到最上方) -->
+        <div class="mb-6 flex flex-col space-y-3">
+            <button id="startButton" class="btn bg-blue-600 text-white font-semibold py-2 rounded-lg shadow-lg">開始模擬</button>
+            <button id="resetButton" class="btn bg-red-500 text-white font-semibold py-2 rounded-lg shadow-lg">重置</button>
+            <p id="particleCount" class="text-center text-lg font-medium text-gray-800 mt-4">聚合粒子數: 0</p>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- 模擬速度滑桿 -->
+            <div>
+                <label for="speedSlider" class="block text-sm font-medium text-gray-700">模擬速度 (每幀步數): <span id="speedValue" class="font-semibold text-blue-600">10</span></label>
+                <input type="range" id="speedSlider" min="1" max="100" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-1">
+            </div>
+            
+            <!-- 最大擴散粒子數滑桿 -->
+            <div>
+                <label for="maxWalkerSlider" class="block text-sm font-medium text-gray-700">最大擴散粒子數 (同時在場): <span id="maxWalkerValue" class="font-semibold text-purple-600">50</span></label>
+                <input type="range" id="maxWalkerSlider" min="1" max="1000" value="50" class="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer mt-1">
+            </div>
+            
+            <!-- 生長顏色選擇器 -->
+            <div>
+                <label for="colorPicker" class="block text-sm font-medium text-gray-700">生長顏色 (底部生長):</label>
+                <input type="color" id="colorPicker" value="#4ade80" class="w-full h-10 border border-gray-300 rounded-lg cursor-pointer p-0.5 mt-1">
+            </div>
+
+            <!-- *** 新增：底部電極離地高度滑桿 *** -->
+            <div>
+                <label for="cathodeDistanceSlider" class="block text-sm font-medium text-gray-700">底部電極離地高度 (像素): <span id="cathodeDistanceValue" class="font-semibold text-indigo-600">10</span></label>
+                <input type="range" id="cathodeDistanceSlider" min="0" max="150" value="10" class="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer mt-1">
+                <p class="text-xs text-gray-500 mt-1">控制負極底部結構距離畫布底部的距離。最小 0px，最大 150px。</p>
+            </div>
+            
+            <!-- 三角形數量滑桿 -->
+            <div>
+                <label for="numTrianglesSlider" class="block text-sm font-medium text-gray-700">底部三角形數量: <span id="numTrianglesValue" class="font-semibold text-red-600">1</span></label>
+                <input type="range" id="numTrianglesSlider" min="1" max="5" value="1" class="w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer mt-1">
+            </div>
+
+            <!-- 三角形底邊滑桿 -->
+            <div>
+                <label for="baseWidthSlider" class="block text-sm font-medium text-gray-700">三角形底邊寬度 (像素): <span id="baseWidthValue" class="font-semibold text-green-600">50</span></label>
+                <input type="range" id="baseWidthSlider" min="10" max="100" value="50" class="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer mt-1">
+                <p class="text-xs text-gray-500 mt-1">粒子大小為 3px，建議使用 3 的倍數以獲得最佳視覺效果。</p>
+            </div>
+
+            <!-- 三角形高度滑桿 -->
+            <div>
+                <label for="heightSlider" class="block text-sm font-medium text-gray-700">三角形高度 (像素): <span id="heightValue" class="font-semibold text-yellow-600">20</span></label>
+                <input type="range" id="heightSlider" min="10" max="100" value="20" class="w-full h-2 bg-yellow-200 rounded-lg appearance-none cursor-pointer mt-1">
+                <p class="text-xs text-gray-500 mt-1">粒子大小為 3px，建議使用 3 的倍數以獲得最佳視覺效果。</p>
+            </div>
+            
+            <!-- 三角形間隔滑桿 -->
+            <div>
+                <label for="spacingSlider" class="block text-sm font-medium text-gray-700">三角形間隔 (網格數): <span id="spacingValue" class="font-semibold text-pink-600">3</span></label>
+                <input type="range" id="spacingSlider" min="1" max="80" value="3" class="w-full h-2 bg-pink-200 rounded-lg appearance-none cursor-pointer mt-1">
+                <p class="text-xs text-gray-500 mt-1">每個網格為 3 像素。</p>
+            </div>
+
+            <!-- 三角形水平偏移滑桿 -->
+            <div>
+                <label for="offsetSlider" class="block text-sm font-medium text-gray-700">水平偏移 (像素): <span id="offsetValue" class="font-semibold text-blue-600">0</span></label>
+                <input type="range" id="offsetSlider" min="-100" max="100" value="0" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer mt-1">
+            </div>
+        </div>
+        
+        <!-- 模擬狀態標籤 -->
+        <div class="mt-4 border-t pt-4 space-y-2">
+            <p class="text-xs font-semibold text-gray-700">極性設定：</p>
+            <p class="text-sm text-red-500 font-medium">頂部邊界：正極 (400x10px 粒子生成區)</p>
+            <p class="text-sm text-green-500 font-medium">底部邊界：負極 (種子可變 + 400x10px 底部長條)</p>
+            <p class="text-sm text-yellow-500 font-medium">短路條件：任一聚合粒子碰到頂部即停止模擬。</p>
+            <p class="text-sm font-medium text-purple-600">視覺效果：粒子尺寸為 3px，距離聚合體最高點 30px 內的分支顯示為紫色。</p>
+        </div>
+    </div>
+
+    <!-- 畫布/模擬區域 -->
+    <div class="w-full lg:w-2/3 flex justify-center">
+        <canvas id="dlaCanvas" width="500" height="500"></canvas>
+    </div>
+
+</div>
+
+<script>
+    // 全域變數
+    const canvas = document.getElementById('dlaCanvas');
+    const ctx = canvas.getContext('2d');
+    const WIDTH = canvas.width;
+    const HEIGHT = canvas.height;
+    
+    // 粒子的網格大小 (像素): 依照要求改為 3px
+    const PARTICLE_SIZE = 3; 
+    // 網格大小：500 / 3 = 166 (取整)
+    const GRID_SIZE = Math.floor(WIDTH / PARTICLE_SIZE); 
+    
+    const PURPLE_COLOR = '#8b5cf6'; // 紫色
+    // 頂部生長的分支著色範圍 (像素)。距離最高點 30px 內的分支會變色
+    const PURPLE_BAND_PX = 30; 
+
+    // --- DLA 邊界尺寸設定 (像素) ---
+    // 頂部正極 (Anode) 尺寸
+    const ANODE_WIDTH_PX = 400;
+    const ANODE_HEIGHT_PX = 10;
+    // 底部負極 (Cathode) 條狀基板尺寸
+    const STRIP_WIDTH_PX = 400;
+    const STRIP_HEIGHT_PX = 10;
+    
+    // DLA 參數
+    let grid = []; // 網格，用於儲存已聚合的粒子 (1: 聚合, 0: 空)
+    let aggregate = []; // 儲存已聚合的粒子物件 (金屬樹)
+    let walkers = []; // 儲存正在隨機行走的粒子 (離子)
+    let isRunning = false;
+    let animationFrameId;
+    let currentParticleColor = '#4ade80'; // 底部/預設生長顏色
+    let maxWalkers = 50; // 最大同時擴散粒子數
+    let highestY = HEIGHT; // 追蹤聚合體的最高點Y座標 (Y=0 是頂部)
+    
+    let cathodeDistanceFromBottomPx = 10; // *** 新增：底部負極距離畫布底部的像素距離 ***
+    let numTriangles = 1;      // 底部三角形數量
+    let triangleOffsetPx = 0;  // 底部三角形結構的水平偏移 (像素)
+    let triangleSpacingGx = 3; // 底部三角形之間的間隔 (網格數)
+
+    // 底部三角形尺寸 (動態控制，初始值與之前相同)
+    let triangleBasePx = 50;  // 預設底邊寬度 (像素)
+    let triangleHeightPx = 20; // 預設高度 (像素)
+
+
+    // UI 元素
+    const startButton = document.getElementById('startButton');
+    const resetButton = document.getElementById('resetButton');
+    const speedSlider = document.getElementById('speedSlider');
+    const speedValueSpan = document.getElementById('speedValue');
+    const particleCountSpan = document.getElementById('particleCount');
+    const colorPicker = document.getElementById('colorPicker');
+    const maxWalkerSlider = document.getElementById('maxWalkerSlider');
+    const maxWalkerValueSpan = document.getElementById('maxWalkerValue');
+    const cathodeDistanceSlider = document.getElementById('cathodeDistanceSlider'); // *** 新增 UI ***
+    const cathodeDistanceValueSpan = document.getElementById('cathodeDistanceValue'); // *** 新增 UI ***
+    const numTrianglesSlider = document.getElementById('numTrianglesSlider');
+    const numTrianglesValueSpan = document.getElementById('numTrianglesValue');
+    const offsetSlider = document.getElementById('offsetSlider');
+    const offsetValueSpan = document.getElementById('offsetValue');
+    const spacingSlider = document.getElementById('spacingSlider');
+    const spacingValueSpan = document.getElementById('spacingValue');
+    // 新增三角形底/高 UI 元素
+    const baseWidthSlider = document.getElementById('baseWidthSlider');
+    const baseWidthValueSpan = document.getElementById('baseWidthValue');
+    const heightSlider = document.getElementById('heightSlider');
+    const heightValueSpan = document.getElementById('heightValue');
+
+
+    // --- 輔助函數 ---
+
+    // 將像素座標轉換為網格索引
+    function toGridIndex(x, y) {
+        // 使用 Math.floor 處理非整數結果
+        const gx = Math.floor(x / PARTICLE_SIZE);
+        const gy = Math.floor(y / PARTICLE_SIZE);
+        return { gx, gy };
+    }
+
+    // 檢查網格索引是否在邊界內
+    function inBounds(gx, gy) {
+        return gx >= 0 && gx < GRID_SIZE && gy >= 0 && gy < GRID_SIZE;
+    }
+
+    // 獲取網格位置的值
+    function getGrid(gx, gy) {
+        if (!inBounds(gx, gy)) return 0;
+        return grid[gy * GRID_SIZE + gx] || 0;
+    }
+
+    // 設定網格位置的值
+    function setGrid(gx, gy, value) {
+        if (inBounds(gx, gy)) {
+            grid[gy * GRID_SIZE + gx] = value;
+        }
+    }
+
+    // --- DLA 粒子類別 ---
+
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            // 如果粒子在初始化時未指定顏色，則使用預設生長色
+            this.color = color || currentParticleColor; 
+            const { gx, gy } = toGridIndex(x, y);
+            this.gx = gx;
+            this.gy = gy;
+        }
+
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, PARTICLE_SIZE, PARTICLE_SIZE);
+        }
+    }
+
+    // --- DLA 核心邏輯 ---
+
+    // 檢查粒子是否與已聚合的粒子相鄰 (Moore 鄰域)
+    function checkNeighbors(gx, gy) {
+        const neighbors = [
+            [0, 1], [0, -1], [1, 0], [-1, 0], // 上下左右
+            [1, 1], [1, -1], [-1, 1], [-1, -1] // 對角線
+        ];
+
+        for (const [dx, dy] of neighbors) {
+            if (getGrid(gx + dx, gy + dy) === 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 在頂部 400x10 像素的矩形區域內隨機生成粒子 (模擬正極/Anode)
+    function spawnWalker() {
+        // 計算網格中的粒子數量 (使用 Math.floor 確保是整數)
+        const anodeWidthParticles = Math.floor(ANODE_WIDTH_PX / PARTICLE_SIZE);
+        const anodeHeightParticles = Math.floor(ANODE_HEIGHT_PX / PARTICLE_SIZE); 
+        
+        const centerGx = Math.floor(GRID_SIZE / 2); 
+        
+        // 計算 X 軸的起始和結束網格索引
+        const startGx = centerGx - Math.floor(anodeWidthParticles / 2); 
+        const endGx = startGx + anodeWidthParticles;                    
+        
+        // Y 軸的起始和結束網格索引 (從頂部 y=0 開始)
+        const startGy = 0;
+        const endGy = startGy + anodeHeightParticles; 
+
+        // 1. 隨機選擇網格座標 (gx, gy)
+        const gx = Math.floor(Math.random() * (endGx - startGx)) + startGx;
+        const gy = Math.floor(Math.random() * (endGy - startGy)) + startGy;
+        
+        // 2. 轉換為像素座標
+        const x = gx * PARTICLE_SIZE;
+        const y = gy * PARTICLE_SIZE;
+
+        walkers.push(new Particle(x, y));
+    }
+
+    /**
+     * @returns {boolean} 如果金屬樹碰到頂部邊界則返回 true
+     */
+    function moveWalkers() {
+        // 定義移動方向和權重 (模擬電場偏向: 兩倍機率向下)
+        const moves = [
+            [0, 1], [0, 1], // Down (偏向/Drift)
+            [0, -1],        // Up (擴散/Diffusion)
+            [1, 0],         // Right (擴散/Diffusion)
+            [-1, 0]         // Left (擴散/Diffusion)
+        ];
+        
+        for (let i = walkers.length - 1; i >= 0; i--) {
+            const walker = walkers[i];
+            
+            // 隨機選擇移動
+            const [dx, dy] = moves[Math.floor(Math.random() * moves.length)];
+
+            // 新位置 (像素)
+            let newX = walker.x + dx * PARTICLE_SIZE;
+            let newY = walker.y + dy * PARTICLE_SIZE;
+
+            // --- 邊界處理 ---
+            
+            // 1. 處理水平邊界 (clamping)
+            newX = Math.max(0, Math.min(WIDTH - PARTICLE_SIZE, newX));
+
+            // 2. 檢查粒子是否逸出頂部 (y < 0)
+            if (newY < 0) {
+                walkers.splice(i, 1);
+                continue; 
+            }
+
+            // 3. 處理底部邊界 (clamping)
+            newY = Math.min(HEIGHT - PARTICLE_SIZE, newY);
+            
+            // 新位置 (網格)
+            let { gx: newGx, gy: newGy } = toGridIndex(newX, newY);
+
+            // 檢查是否與聚合體相鄰
+            if (checkNeighbors(newGx, newGy)) {
+                // 聚合！
+                walker.x = newX;
+                walker.y = newY;
+                walker.gx = newGx;
+                walker.gy = newGy;
+                
+                // *** 高度變色邏輯：動態最高點著色 ***
+                
+                // 1. 更新整體最高點
+                highestY = Math.min(highestY, newY);
+                
+                // 2. 如果粒子聚合在目前最高點的 PURPLE_BAND_PX (30 像素) 範圍內，則改為紫色
+                if (walker.y < highestY + PURPLE_BAND_PX) {
+                    walker.color = PURPLE_COLOR;
+                } else {
+                    // 如果是較舊的、較低的部分，則使用預設生長色
+                    walker.color = currentParticleColor; 
+                }
+                
+                // 將粒子添加到聚合體並標記網格
+                aggregate.push(walker);
+                setGrid(newGx, newGy, 1);
+                
+                // 從隨機行走粒子列表中移除
+                walkers.splice(i, 1);
+                
+                // *** 短路停止機制：檢查是否觸碰到頂部邊界 ***
+                // 頂部生成區的高度網格數
+                const anodeHeightParticles = Math.floor(ANODE_HEIGHT_PX / PARTICLE_SIZE); 
+                if (newGy < anodeHeightParticles) { 
+                    return true; // 觸頂，停止模擬
+                }
+                
+            } else if (getGrid(newGx, newGy) === 0) {
+                // 如果新位置是空的，則移動
+                walker.x = newX;
+                walker.y = newY;
+                walker.gx = newGx;
+                walker.gy = newGy;
+            } else {
+                // 遇到另一個聚合粒子 (不移動)
+            }
+        }
+        return false; // 沒有觸頂
+    }
+    
+    // 停止模擬並更新 UI
+    function stopSimulation(message) {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        isRunning = false;
+        startButton.textContent = '模擬已停止 (短路)';
+        startButton.classList.remove('bg-yellow-500', 'bg-blue-600');
+        startButton.classList.add('bg-gray-500'); // 禁用顏色
+        particleCountSpan.textContent = message; // 顯示停止訊息
+    }
+    
+    // --- 初始化和重置 ---
+
+    function initialize() {
+        // 取消任何正在運行的動畫
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+
+        // 初始化網格為 0 (空)
+        grid = new Array(GRID_SIZE * GRID_SIZE).fill(0);
+        aggregate = [];
+        walkers = [];
+        highestY = HEIGHT; // 重置最高點
+        
+        const centerGx = Math.floor(GRID_SIZE / 2); 
+        const seedColor = '#ef4444'; // 負極底板顏色
+
+        // 獲取動態三角形尺寸
+        const TRI_BASE_PX = triangleBasePx;
+        const TRI_HEIGHT_PX = triangleHeightPx;
+
+        // *** 根據新的滑桿值計算底部負極的位置 ***
+        // 底部 strip 的最底邊界 (Y 像素座標)
+        const stripBottomYPx = HEIGHT - cathodeDistanceFromBottomPx;
+        
+        // 底部 strip 的最頂邊界 (Y 像素座標)
+        const stripTopYPx = stripBottomYPx - STRIP_HEIGHT_PX;
+        
+        // 轉換為網格索引
+        const { gy: stripStartGy } = toGridIndex(0, stripTopYPx);
+        const stripEndGy = toGridIndex(0, stripBottomYPx - PARTICLE_SIZE).gy;
+
+        // --- 1. 放置底部 400x10 矩形條 (負極基板) ---
+        // 使用 Math.floor 確保網格數是整數
+        const stripWidthParticles = Math.floor(STRIP_WIDTH_PX / PARTICLE_SIZE);
+        
+        const stripStartGx = centerGx - Math.floor(stripWidthParticles / 2); 
+        const stripEndGx = stripStartGx + stripWidthParticles;             
+        
+        // 矩形條的 Y 軸從 stripStartGy 到 stripEndGy
+        for (let gy = stripStartGy; gy <= stripEndGy; gy++) {
+            // 確保 gy 在畫布範圍內
+            if (!inBounds(0, gy)) continue;
+            for (let gx = stripStartGx; gx < stripEndGx; gx++) {
+                // 確保 gx 在畫布範圍內
+                if (!inBounds(gx, 0)) continue;
+                const seedX = gx * PARTICLE_SIZE;
+                const seedY = gy * PARTICLE_SIZE;
+                aggregate.push(new Particle(seedX, seedY, seedColor));
+                setGrid(gx, gy, 1);
+            }
+        }
+        
+        // --- 2. 放置多個三角形種子 (負極起始點) ---
+        // 計算單個三角形的網格數 (使用動態尺寸)
+        const triBaseWidthParticles = Math.floor(TRI_BASE_PX / PARTICLE_SIZE);
+        const triHeightParticles = Math.floor(TRI_HEIGHT_PX / PARTICLE_SIZE);    
+        const triBaseGy = stripStartGy - 1; // 三角形底部從矩形頂部往上一個網格開始
+        
+        // --- 修正三角形形狀的核心邏輯 ---
+        const halfBaseParticles = Math.floor(triBaseWidthParticles / 2);
+        // 計算每層高度 (網格) 寬度應減少多少 (斜率 Run/Rise)
+        const ratio = triHeightParticles > 0 ? halfBaseParticles / triHeightParticles : 0;
+        
+        // 總結構寬度 (網格數)
+        const totalStructureWidthGx = (numTriangles * triBaseWidthParticles) + ((numTriangles - 1) * triangleSpacingGx);
+        
+        // 結構的起始中心點 (考慮偏移)
+        let structureCenterGx = centerGx;
+        const offsetGx = Math.floor(triangleOffsetPx / PARTICLE_SIZE);
+        structureCenterGx += offsetGx;
+
+        // 計算整個結構最左邊三角形的中心網格點
+        let initialCenterGx = structureCenterGx - Math.floor(totalStructureWidthGx / 2) + Math.floor(triBaseWidthParticles / 2);
+        
+        // 遍歷所有要建立的三角形
+        for (let i = 0; i < numTriangles; i++) {
+            // 計算當前三角形的中心點網格索引
+            let currentTriangleCenterGx = initialCenterGx + i * (triBaseWidthParticles + triangleSpacingGx);
+
+            // 針對當前三角形，從底層開始往上畫 (h=0 是底層)
+            for (let h = 0; h < triHeightParticles; h++) {
+                
+                // 根據高度 h (從 0 開始) 計算從中心減少的網格數
+                const reduction = Math.floor(h * ratio); 
+                
+                // 這是該層 (高度 h) 的寬度 (Base - 兩倍的減少量)
+                let layerWidth = triBaseWidthParticles - (reduction * 2);
+                
+                // 確保寬度至少為 1 (頂點)
+                if (layerWidth < 1) layerWidth = 1;
+                
+                // 計算當前層的起始網格索引
+                let layerStartGx = currentTriangleCenterGx - Math.floor(layerWidth / 2);
+                let layerEndGx = layerStartGx + layerWidth;
+                
+                let currentGy = triBaseGy - h; // 當前行索引 (從下往上畫)
+
+                for (let gx = layerStartGx; gx < layerEndGx; gx++) {
+                    if (inBounds(gx, currentGy)) { 
+                        const seedX = gx * PARTICLE_SIZE;
+                        const seedY = currentGy * PARTICLE_SIZE;
+                        // 將粒子添加到聚合體並標記網格
+                        aggregate.push(new Particle(seedX, seedY, seedColor));
+                        setGrid(gx, currentGy, 1);
+                    }
+                }
+            }
+        }
+        // ---------------------------------------------------
+        
+        // 初始生成最大限制的隨機行走粒子
+        for (let i = 0; i < maxWalkers; i++) {
+            spawnWalker();
+        }
+
+        draw(); // 繪製初始狀態
+    }
+
+    // 繪製畫布內容
+    function draw() {
+        // 清除畫布
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        
+        // --- 頂部正極 (Anode) 視覺化: 400x10 像素，居中 ---
+        const anodeWidth = ANODE_WIDTH_PX; 
+        const anodeHeight = ANODE_HEIGHT_PX; 
+        const anodeX = (WIDTH - anodeWidth) / 2; 
+        const anodeY = 0; // 頂部
+
+        // 使用紅色來表示正極/粒子生成區
+        ctx.fillStyle = '#ef4444'; 
+        ctx.fillRect(anodeX, anodeY, anodeWidth, anodeHeight);
+        // --------------------------------------------------
+
+        // 繪製已聚合的粒子 (金屬樹)
+        for (const p of aggregate) {
+            p.draw();
+        }
+
+        // 繪製正在行走的粒子 (擴散粒子)
+        for (const w of walkers) {
+            w.draw();
+        }
+        
+        // 更新粒子計數
+        particleCountSpan.textContent = `聚合粒子數: ${aggregate.length}`;
+    }
+
+    // 主動畫循環
+    function animate() {
+        if (!isRunning) return;
+
+        const stepsPerFrame = parseInt(speedSlider.value);
+        for (let i = 0; i < stepsPerFrame; i++) {
+            // 檢查 moveWalkers 是否返回 true (表示觸頂)
+            if (moveWalkers()) {
+                draw(); // 繪製最後一幀
+                stopSimulation(`模擬結束！聚合粒子數: ${aggregate.length} (發生短路)`);
+                return; // 停止動畫循環
+            }
+            
+            // 確保粒子數維持在最大值以下
+            if (walkers.length < maxWalkers) {
+                 spawnWalker();
+            }
+        }
+        
+        draw();
+
+        animationFrameId = requestAnimationFrame(animate);
+    }
+    
+    // --- 事件處理 ---
+
+    startButton.addEventListener('click', () => {
+        if (isRunning) {
+            // 暫停
+            cancelAnimationFrame(animationFrameId);
+            isRunning = false;
+            startButton.textContent = '繼續模擬';
+            startButton.classList.remove('bg-yellow-500');
+            startButton.classList.add('bg-blue-600');
+        } else {
+            // 開始/繼續
+            isRunning = true;
+            startButton.textContent = '暫停模擬';
+            startButton.classList.remove('bg-blue-600');
+            startButton.classList.add('bg-yellow-500');
+            animate();
+        }
+    });
+
+    resetButton.addEventListener('click', () => {
+        if (isRunning) {
+            stopSimulation(`模擬已重置`);
+        }
+        initialize();
+        startButton.textContent = '開始模擬';
+        startButton.classList.remove('bg-yellow-500', 'bg-gray-500');
+        startButton.classList.add('bg-blue-600');
+    });
+
+    speedSlider.addEventListener('input', (e) => {
+        speedValueSpan.textContent = e.target.value;
+    });
+
+    colorPicker.addEventListener('input', (e) => {
+        currentParticleColor = e.target.value;
+    });
+    
+    // 處理最大擴散粒子數滑桿
+    maxWalkerSlider.addEventListener('input', (e) => {
+        maxWalkers = parseInt(e.target.value);
+        maxWalkerValueSpan.textContent = e.target.value;
+    });
+
+    // *** 處理底部電極離地高度滑桿 ***
+    cathodeDistanceSlider.addEventListener('input', (e) => {
+        cathodeDistanceFromBottomPx = parseInt(e.target.value);
+        cathodeDistanceValueSpan.textContent = e.target.value;
+        if (!isRunning) initialize(); 
+    });
+    
+    // 處理三角形數量滑桿
+    numTrianglesSlider.addEventListener('input', (e) => {
+        numTriangles = parseInt(e.target.value);
+        numTrianglesValueSpan.textContent = e.target.value;
+        // 如果模擬未運行，立即重繪以顯示新的種子結構
+        if (!isRunning) initialize(); 
+    });
+    
+    // 處理三角形間隔滑桿
+    spacingSlider.addEventListener('input', (e) => {
+        triangleSpacingGx = parseInt(e.target.value);
+        spacingValueSpan.textContent = e.target.value;
+        // 如果模擬未運行，立即重繪以顯示新的種子結構
+        if (!isRunning) initialize(); 
+    });
+    
+    // 處理三角形底邊滑桿 
+    baseWidthSlider.addEventListener('input', (e) => {
+        triangleBasePx = parseInt(e.target.value);
+        baseWidthValueSpan.textContent = e.target.value;
+        if (!isRunning) initialize(); 
+    });
+
+    // 處理三角形高度滑桿
+    heightSlider.addEventListener('input', (e) => {
+        triangleHeightPx = parseInt(e.target.value);
+        heightValueSpan.textContent = e.target.value;
+        if (!isRunning) initialize(); 
+    });
+
+    // 處理水平偏移滑桿
+    offsetSlider.addEventListener('input', (e) => {
+        triangleOffsetPx = parseInt(e.target.value);
+        offsetValueSpan.textContent = e.target.value;
+        // 如果模擬未運行，立即重繪以顯示新的種子結構
+        if (!isRunning) initialize(); 
+    });
+
+
+    // 頁面載入時初始化
+    window.onload = initialize;
+
+</script>
+</body>
+</html>
