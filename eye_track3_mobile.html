@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI 監控 - 行動版</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs" type="module"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1a1a1a; color: #eee; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; touch-action: manipulation; }
+        
+        /* 自適應寬度 */
+        .ui-width { width: 95vw; max-width: 800px; box-sizing: border-box; }
+
+        .tg-config { background: #2c3e50; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #444; }
+        .config-row { display: flex; gap: 5px; margin-bottom: 8px; }
+        .switch-group { display: flex; justify-content: space-around; font-size: 12px; border-top: 1px solid #3e4f5f; padding-top: 8px; }
+        
+        .controls { background: #333; padding: 10px; border-radius: 8px; display: flex; gap: 8px; margin-bottom: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+
+        .stats-panel-mini { 
+            background: #222; padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; 
+            border: 1px solid #444; display: flex; justify-content: space-between; font-size: 0.85rem;
+        }
+        .stat-value { font-weight: bold; color: #00ff88; }
+        .stat-value.danger { color: #ff4444; }
+
+        .container { position: relative; border: 2px solid #444; border-radius: 8px; overflow: hidden; background: #000; width: 95vw; max-width: 800px; aspect-ratio: 4/3; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+        
+        button, select, input[type="text"] { padding: 6px; border-radius: 4px; border: none; background: #444; color: white; font-size: 12px; }
+        #resetBtn { background: #dc3545; flex-grow: 1; }
+        
+        .log-panel { height: 80px; overflow-y: auto; background: #000; padding: 8px; font-size: 11px; color: #888; border-radius: 8px; border: 1px solid #333; margin-top: 8px; }
+        .log-entry { margin-bottom: 2px; border-left: 2px solid #444; padding-left: 5px; }
+        label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="tg-config ui-width">
+        <div class="config-row">
+            <input type="text" id="tgToken" placeholder="Bot Token" style="flex: 2;">
+            <input type="text" id="tgChatId" placeholder="Chat ID" style="flex: 1;">
+        </div>
+        <div class="switch-group">
+            <label><input type="checkbox" id="enableTG" checked> Telegram</label>
+            <label><input type="checkbox" id="enableDownload" checked> 下載截圖</label>
+        </div>
+    </div>
+
+    <div class="controls ui-width">
+        <select id="thresholdSelect" style="flex: 1;">
+            <option value="0">不處理</option>
+            <option value="5">5s 門檻</option>
+            <option value="10" selected>10s 門檻</option>
+        </select>
+        <button id="resetBtn">重置數據/解鎖目標</button>
+    </div>
+
+    <div class="stats-panel-mini ui-width">
+        <div>正:<span id="time-front" class="stat-value">0.0s</span></div>
+        <div>左:<span id="time-left" class="stat-value">0.0s</span></div>
+        <div>右:<span id="time-right" class="stat-value">0.0s</span></div>
+        <div>失:<span id="time-lost" class="stat-value danger">0.0s</span></div>
+    </div>
+
+    <div class="container" id="videoContainer">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="output_canvas"></canvas>
+    </div>
+
+    <div class="log-panel ui-width" id="logPanel">等待相機權限...</div>
+
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs";
+
+        const video = document.getElementById("webcam");
+        const canvas = document.getElementById("output_canvas");
+        const ctx = canvas.getContext("2d");
+        const logPanel = document.getElementById("logPanel");
+        
+        let stats = { front: 0, left: 0, right: 0, lost: 0 };
+        let currentContinuousTime = 0;
+        let lastState = "none";
+        let hasScreenshotTaken = false;
+        let lastTimestamp = performance.now();
+        let faceLandmarker, results = null, isTracking = false, targetFacePos = null;
+
+        async function init() {
+            try {
+                addLog("正在載入 AI 模型...");
+                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm");
+                faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                    baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task` },
+                    runningMode: "VIDEO", numFaces: 3
+                });
+                addLog("模型載入成功");
+                setupCamera();
+                renderLoop();
+            } catch (e) { addLog(`初始化失敗: ${e.message}`, "#ff4444"); }
+        }
+
+        function addLog(msg, color = "#888") {
+            const div = document.createElement("div");
+            div.className = "log-entry";
+            div.innerHTML = `<span style="color:${color}">${msg}</span>`;
+            logPanel.insertBefore(div, logPanel.firstChild);
+        }
+
+        async function setupCamera() {
+            const constraints = {
+                video: {
+                    facingMode: "user", // 強制使用前置鏡頭
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            };
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                video.addEventListener("loadedmetadata", () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    addLog("相機已啟動，請點擊畫面鎖定臉部");
+                });
+            } catch (err) { addLog(`無法開啟鏡頭: ${err.message}`, "#ff4444"); }
+        }
+
+        // 支援手機觸控選取
+        const handleInteraction = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const clickX = (clientX - rect.left) / rect.width;
+            const clickY = (clientY - rect.top) / rect.height;
+
+            if (results?.faceLandmarks) {
+                results.faceLandmarks.forEach(landmarks => {
+                    if (Math.hypot(clickX - landmarks[1].x, clickY - landmarks[1].y) < 0.15) {
+                        targetFacePos = { x: landmarks[1].x, y: landmarks[1].y };
+                        isTracking = true;
+                        addLog("目標已鎖定", "#00ff88");
+                    }
+                });
+            }
+        };
+
+        canvas.addEventListener("touchstart", (e) => { e.preventDefault(); handleInteraction(e); }, {passive: false});
+        canvas.addEventListener("mousedown", handleInteraction);
+
+        function takeScreenshot(stateName, duration) {
+            const isDownloadEnabled = document.getElementById("enableDownload").checked;
+            const isTGEnabled = document.getElementById("enableTG").checked;
+            if (!isDownloadEnabled && !isTGEnabled) return;
+
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
+            const tCtx = tempCanvas.getContext("2d");
+            tCtx.drawImage(video, 0, 0);
+
+            const timeStr = new Date().toLocaleString();
+            tCtx.fillStyle = "rgba(0,0,0,0.6)";
+            tCtx.fillRect(0, 0, tempCanvas.width, 40);
+            tCtx.fillStyle = "#0ff";
+            tCtx.font = "20px Arial";
+            tCtx.fillText(`${stateName} (${duration.toFixed(1)}s) - ${timeStr}`, 10, 28);
+
+            tempCanvas.toBlob((blob) => {
+                if (isDownloadEnabled) {
+                    const link = document.createElement("a");
+                    link.download = `Alert_${new Date().getTime()}.png`;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    addLog(`已存圖 (原因: ${stateName})`, "#00ff88");
+                }
+                if (isTGEnabled) {
+                    const token = document.getElementById("tgToken").value;
+                    const chatId = document.getElementById("tgChatId").value;
+                    if (token && chatId) {
+                        const formData = new FormData();
+                        formData.append("chat_id", chatId);
+                        formData.append("caption", `⚠️ 警報: ${stateName}持續${duration.toFixed(1)}秒`);
+                        formData.append("photo", blob);
+                        fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: "POST", body: formData })
+                        .then(r => { if(r.ok) addLog("TG 已送出", "#3498db"); });
+                    }
+                }
+            }, "image/png");
+        }
+
+        function renderLoop() {
+            const now = performance.now();
+            const deltaTime = (now - lastTimestamp) / 1000;
+            lastTimestamp = now;
+
+            if (video.readyState >= 2) {
+                results = faceLandmarker.detectForVideo(video, now);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let activeFace = null;
+                let currentState = "none";
+
+                if (results.faceLandmarks) {
+                    results.faceLandmarks.forEach(landmarks => {
+                        if (isTracking && targetFacePos && Math.hypot(landmarks[1].x - targetFacePos.x, landmarks[1].y - targetFacePos.y) < 0.25) {
+                            activeFace = landmarks;
+                            targetFacePos = { x: landmarks[1].x, y: landmarks[1].y };
+                        }
+                        drawUI(landmarks, false);
+                    });
+                }
+
+                if (isTracking) {
+                    if (activeFace) {
+                        const ratio = (activeFace[1].x - activeFace[234].x) / (activeFace[454].x - activeFace[234].x);
+                        currentState = ratio < 0.38 ? "左轉" : (ratio > 0.62 ? "右轉" : "正臉");
+                        if (currentState === "正臉") stats.front += deltaTime;
+                        else if (currentState === "左轉") stats.left += deltaTime;
+                        else if (currentState === "右轉") stats.right += deltaTime;
+                    } else {
+                        currentState = "遺失";
+                        stats.lost += deltaTime;
+                    }
+
+                    if (currentState === lastState) currentContinuousTime += deltaTime;
+                    else { currentContinuousTime = 0; hasScreenshotTaken = false; }
+                    lastState = currentState;
+
+                    const threshold = parseFloat(document.getElementById("thresholdSelect").value);
+                    if (threshold > 0 && currentState !== "正臉" && currentState !== "none" && currentContinuousTime >= threshold && !hasScreenshotTaken) {
+                        takeScreenshot(currentState, currentContinuousTime);
+                        hasScreenshotTaken = true;
+                    }
+                    drawUI(activeFace, true, `${currentState} ${currentContinuousTime.toFixed(1)}s`);
+                }
+                updateDashboard();
+            }
+            requestAnimationFrame(renderLoop);
+        }
+
+        function updateDashboard() {
+            document.getElementById("time-front").innerText = stats.front.toFixed(1) + "s";
+            document.getElementById("time-left").innerText = stats.left.toFixed(1) + "s";
+            document.getElementById("time-right").innerText = stats.right.toFixed(1) + "s";
+            document.getElementById("time-lost").innerText = stats.lost.toFixed(1) + "s";
+        }
+
+        function drawUI(landmarks, isTarget, label = "") {
+            if (!landmarks) return;
+            ctx.strokeStyle = isTarget ? "#00ff88" : "rgba(255,255,255,0.15)";
+            ctx.lineWidth = isTarget ? 3 : 1;
+            
+            // 畫眼睛周圍點
+            [468, 473].forEach(i => {
+                const p = landmarks[i];
+                ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, 3, 0, 2*Math.PI); ctx.stroke();
+            });
+
+            if (isTarget) {
+                ctx.fillStyle = "#00ff88"; ctx.font = "bold 24px sans-serif";
+                ctx.fillText(label, landmarks[10].x * canvas.width, landmarks[10].y * canvas.height - 10);
+            }
+        }
+
+        document.getElementById("resetBtn").onclick = () => { 
+            stats = { front: 0, left: 0, right: 0, lost: 0 }; 
+            isTracking = false; 
+            targetFacePos = null;
+            addLog("數據重置，請重新選取臉部", "#dc3545");
+        };
+
+        init();
+    </script>
+</body>
+</html>

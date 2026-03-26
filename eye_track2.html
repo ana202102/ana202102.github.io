@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 監控系統 - Telegram 聯動版</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs" type="module"></script>
+    <style>
+        body { font-family: 'PingFang TC', sans-serif; background: #1a1a1a; color: #eee; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .controls { background: #333; padding: 15px; border-radius: 12px; display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .tg-config { background: #2c3e50; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 5px; font-size: 12px; }
+        .stats-panel { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; 
+            background: #222; padding: 20px; border-radius: 12px; margin-bottom: 15px; width: 800px; border: 1px solid #444;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #00ff88; display: block; }
+        .container { position: relative; border: 3px solid #444; border-radius: 8px; overflow: hidden; background: #000; }
+        video { display: block; width: 800px; height: auto; }
+        canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; cursor: crosshair; }
+        button, select, input { padding: 8px 12px; border-radius: 4px; border: none; cursor: pointer; background: #444; color: white; }
+        #resetBtn { background: #dc3545; }
+        .log-panel { margin-top: 15px; width: 800px; height: 100px; overflow-y: auto; background: #000; padding: 10px; font-size: 12px; color: #888; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <h2>AI 監控：Telegram 自動預警系統</h2>
+
+    <div class="tg-config">
+        <input type="text" id="tgToken" placeholder="Telegram Bot Token">
+        <input type="text" id="tgChatId" placeholder="Your Chat ID">
+        <small>(留空則僅本地下載)</small>
+    </div>
+
+    <div class="controls">
+        <select id="cameraSelect"><option>讀取鏡頭...</option></select>
+        <input type="file" id="fileInput" accept="video/*">
+        <label>截圖閾值：</label>
+        <select id="thresholdSelect">
+            <option value="0">不截圖</option>
+            <option value="5">5 秒</option>
+            <option value="10" selected>10 秒</option>
+            <option value="30">30 秒</option>
+        </select>
+        <button id="resetBtn">清除數據</button>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat-item"><span>正臉</span><span id="time-front" class="stat-value">0.0s</span></div>
+        <div class="stat-item"><span>左轉</span><span id="time-left" class="stat-value">0.0s</span></div>
+        <div class="stat-item"><span>右轉</span><span id="time-right" class="stat-value">0.0s</span></div>
+        <div class="stat-item"><span>遺失</span><span id="time-lost" class="stat-value" style="color:#ff4444">0.0s</span></div>
+    </div>
+
+    <div class="container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="output_canvas"></canvas>
+    </div>
+
+    <div class="log-panel" id="logPanel">系統日誌...</div>
+
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs";
+
+        const video = document.getElementById("webcam");
+        const canvas = document.getElementById("output_canvas");
+        const ctx = canvas.getContext("2d");
+        const logPanel = document.getElementById("logPanel");
+        
+        let stats = { front: 0, left: 0, right: 0, lost: 0 };
+        let currentContinuousTime = 0;
+        let lastState = "none";
+        let hasScreenshotTaken = false;
+        let lastTimestamp = performance.now();
+        let faceLandmarker, results = null, isTracking = false, targetFacePos = null;
+
+        async function init() {
+            const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm");
+            faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task` },
+                runningMode: "VIDEO", numFaces: 5
+            });
+            setupCamera();
+            renderLoop();
+        }
+
+        async function setupCamera(deviceId = null) {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: deviceId ? { deviceId: { exact: deviceId } } : true });
+            video.srcObject = stream;
+        }
+
+        // 送出到 Telegram 的函數
+        async function sendToTelegram(blob, caption) {
+            const token = document.getElementById("tgToken").value;
+            const chatId = document.getElementById("tgChatId").value;
+            if (!token || !chatId) return;
+
+            const formData = new FormData();
+            formData.append("chat_id", chatId);
+            formData.append("caption", caption);
+            formData.append("photo", blob, "alert.png");
+
+            try {
+                const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                    method: "POST",
+                    body: formData
+                });
+                if (res.ok) logPanel.innerHTML = `<span style="color:#3498db">[TG] 訊息發送成功</span><br>` + logPanel.innerHTML;
+            } catch (e) {
+                console.error("TG 發送失敗", e);
+            }
+        }
+
+        function takeScreenshot(stateName) {
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
+            const tCtx = tempCanvas.getContext("2d");
+            tCtx.drawImage(video, 0, 0);
+
+            // 繪製時間浮水印
+            const now = new Date();
+            const timeStr = now.toLocaleString();
+            tCtx.fillStyle = "rgba(0,0,0,0.7)";
+            tCtx.fillRect(0, 0, 400, 50);
+            tCtx.fillStyle = "white";
+            tCtx.font = "20px Arial";
+            tCtx.fillText(`${timeStr} - ${stateName}警告`, 10, 30);
+
+            // 轉為 Blob 並發送
+            tempCanvas.toBlob((blob) => {
+                // 1. 本地下載
+                const link = document.createElement("a");
+                link.download = `Alert_${stateName}.png`;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+
+                // 2. 傳送到 Telegram
+                sendToTelegram(blob, `⚠️ 監控警報：偵測到【${stateName}】持續超過設定時間！\n時間：${timeStr}`);
+            }, "image/png");
+
+            logPanel.innerHTML = `[${now.toLocaleTimeString()}] 觸發截圖並嘗試發送 Telegram<br>` + logPanel.innerHTML;
+        }
+
+        canvas.addEventListener("mousedown", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) / rect.width;
+            const clickY = (e.clientY - rect.top) / rect.height;
+            if (results?.faceLandmarks) {
+                results.faceLandmarks.forEach(landmarks => {
+                    if (Math.hypot(clickX - landmarks[1].x, clickY - landmarks[1].y) < 0.1) {
+                        targetFacePos = { x: landmarks[1].x, y: landmarks[1].y };
+                        isTracking = true;
+                    }
+                });
+            }
+        });
+
+        function renderLoop() {
+            const now = performance.now();
+            const deltaTime = (now - lastTimestamp) / 1000;
+            lastTimestamp = now;
+
+            if (video.readyState >= 2) {
+                if (canvas.width !== video.videoWidth) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                }
+                results = faceLandmarker.detectForVideo(video, now);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let activeFace = null, currentState = "none";
+                if (results.faceLandmarks) {
+                    results.faceLandmarks.forEach(landmarks => {
+                        if (isTracking && targetFacePos && Math.hypot(landmarks[1].x - targetFacePos.x, landmarks[1].y - targetFacePos.y) < 0.2) {
+                            activeFace = landmarks;
+                            targetFacePos = { x: landmarks[1].x, y: landmarks[1].y };
+                        }
+                        drawUI(landmarks, false);
+                    });
+                }
+
+                if (isTracking) {
+                    if (activeFace) {
+                        const ratio = (activeFace[1].x - activeFace[234].x) / (activeFace[454].x - activeFace[234].x);
+                        currentState = ratio < 0.38 ? "左轉" : (ratio > 0.62 ? "右轉" : "正臉");
+                        if (currentState === "正臉") stats.front += deltaTime;
+                        else if (currentState === "左轉") stats.left += deltaTime;
+                        else if (currentState === "右轉") stats.right += deltaTime;
+                    } else {
+                        currentState = "遺失";
+                        stats.lost += deltaTime;
+                    }
+
+                    if (currentState === lastState) currentContinuousTime += deltaTime;
+                    else { currentContinuousTime = 0; hasScreenshotTaken = false; }
+                    lastState = currentState;
+
+                    const threshold = parseFloat(document.getElementById("thresholdSelect").value);
+                    if (threshold > 0 && currentState !== "正臉" && currentState !== "none" && currentContinuousTime >= threshold && !hasScreenshotTaken) {
+                        takeScreenshot(currentState);
+                        hasScreenshotTaken = true;
+                    }
+                    drawUI(activeFace, true, `${currentState} (${currentContinuousTime.toFixed(1)}s)`);
+                }
+                updateDashboard();
+            }
+            requestAnimationFrame(renderLoop);
+        }
+
+        function updateDashboard() {
+            document.getElementById("time-front").innerText = stats.front.toFixed(1) + "s";
+            document.getElementById("time-left").innerText = stats.left.toFixed(1) + "s";
+            document.getElementById("time-right").innerText = stats.right.toFixed(1) + "s";
+            document.getElementById("time-lost").innerText = stats.lost.toFixed(1) + "s";
+        }
+
+        function drawUI(landmarks, isTarget, label = "") {
+            if (!landmarks) return;
+            const color = isTarget ? "#00ff88" : "rgba(255,255,255,0.1)";
+            ctx.strokeStyle = color;
+            [468, 473].forEach(i => {
+                const p = landmarks[i];
+                ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, 2*Math.PI); ctx.stroke();
+            });
+            if (isTarget) {
+                ctx.fillStyle = color; ctx.font = "20px Arial";
+                ctx.fillText(label, landmarks[1].x * canvas.width - 20, landmarks[10].y * canvas.height - 20);
+            }
+        }
+
+        document.getElementById("resetBtn").onclick = () => { stats = { front: 0, left: 0, right: 0, lost: 0 }; isTracking = false; };
+        init();
+    </script>
+</body>
+</html>

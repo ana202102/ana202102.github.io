@@ -8,163 +8,149 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style id="system-dynamic-styles">
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-        :root { --base-font-size: 16px; --unified-title-size: calc(var(--base-font-size) * 1.5); --sub-title-size: calc(var(--base-font-size) * 0.85); --primary: #6366f1; --primary-soft: #eef2ff; }
-        body { font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif; background: radial-gradient(circle at top right, #f8fafc, #f1f5f9); font-size: var(--base-font-size); color: #0f172a; letter-spacing: -0.01em; overflow-x: hidden; }
-        #header-system-name { font-size: var(--unified-title-size); font-weight: 900; line-height: 1; display: flex; align-items: center; }
-        .view-header h2 { font-size: var(--unified-title-size); font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; }
-        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.04); }
-        .nav-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 44px; }
-        .nav-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); transform: translateY(-1px); }
-        .student-card { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid #f1f5f9; }
-        .student-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08); border-color: var(--primary-soft); }
+        :root { --base-font-size: 15px; --unified-title-size: 1.4rem; --primary: #6366f1; }
+        body { font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif; background: #f8fafc; color: #0f172a; font-size: var(--base-font-size); }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 2px 12px -2px rgba(0, 0, 0, 0.05); }
+        .nav-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); }
+        .student-card { transition: all 0.15s ease; border: 1px solid #f1f5f9; padding: 0.5rem 0.75rem !important; }
+        .student-card:active { transform: scale(0.95); background-color: #f1f5f9; }
         .btn-active-blue { background: #3b82f6 !important; color: white !important; }
         .btn-active-red { background: #ef4444 !important; color: white !important; }
         .btn-active-green { background: #22c55e !important; color: white !important; }
         .btn-active-orange { background: #f97316 !important; color: white !important; }
         .btn-active-purple { background: #a855f7 !important; color: white !important; }
-        .text-blue-500 { color: #3b82f6; } .text-red-500 { color: #ef4444; } .text-green-500 { color: #22c55e; } .text-orange-500 { color: #f97316; } .text-purple-500 { color: #a855f7; }
-        .bg-blue-400 { background-color: #60a5fa; } .bg-red-400 { background-color: #f87171; } .bg-green-400 { background-color: #4ade80; } .bg-orange-400 { background-color: #fb923c; } .bg-purple-400 { background-color: #c084fc; }
-        .select-custom { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem; }
+        .bg-blue-400 { background-color: #60a5fa; } .bg-red-400 { background-color: #f87171; } 
+        .bg-green-400 { background-color: #4ade80; } .bg-orange-400 { background-color: #fb923c; } .bg-purple-400 { background-color: #c084fc; }
+        .select-custom { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 0.8rem; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <nav class="sticky top-0 z-50 px-4 py-4">
-        <div class="max-w-5xl mx-auto glass-card rounded-2xl p-1.5 flex items-center justify-between">
-            <div class="flex items-center gap-3 pl-3">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg"><i class="fas fa-check-double"></i></div>
-                <h1 id="header-system-name" class="text-slate-800 tracking-tight hidden sm:flex">常規點名</h1>
+    <nav class="sticky top-0 z-50 px-3 py-3">
+        <div class="max-w-6xl mx-auto glass-card rounded-xl p-1 flex items-center justify-between">
+            <div class="flex items-center gap-2 pl-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-sm"><i class="fas fa-check"></i></div>
+                <h1 id="header-system-name" class="font-black text-slate-800 hidden sm:block">常規點名</h1>
             </div>
-            <div class="flex gap-1 bg-slate-100/60 p-1 rounded-xl">
-                <button onclick="switchView('browse')" id="nav-browse" class="nav-btn px-4 rounded-lg text-sm font-bold text-slate-500"><i class="fas fa-layer-group sm:mr-2"></i> <span class="hidden sm:inline">看板</span></button>
-                <button onclick="switchView('register')" id="nav-register" class="nav-btn px-4 rounded-lg text-sm font-bold text-slate-500"><i class="fas fa-edit sm:mr-2"></i> <span class="hidden sm:inline">登記</span></button>
-                <button onclick="switchView('stats')" id="nav-stats" class="nav-btn px-4 rounded-lg text-sm font-bold text-slate-500"><i class="fas fa-chart-line sm:mr-2"></i> <span class="hidden sm:inline">統計</span></button>
-                <button onclick="switchView('settings')" id="nav-settings" class="nav-btn px-4 rounded-lg text-sm font-bold text-slate-500"><i class="fas fa-cog sm:mr-2"></i> <span class="hidden sm:inline">設定</span></button>
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                <button onclick="switchView('browse')" id="nav-browse" class="px-3 py-1.5 rounded-md text-xs font-bold text-slate-500 nav-btn"><i class="fas fa-th-large mr-1"></i>看板</button>
+                <button onclick="switchView('register')" id="nav-register" class="px-3 py-1.5 rounded-md text-xs font-bold text-slate-500 nav-btn"><i class="fas fa-edit mr-1"></i>登記</button>
+                <button onclick="switchView('stats')" id="nav-stats" class="px-3 py-1.5 rounded-md text-xs font-bold text-slate-500 nav-btn"><i class="fas fa-chart-bar mr-1"></i>統計</button>
+                <button onclick="switchView('settings')" id="nav-settings" class="px-3 py-1.5 rounded-md text-xs font-bold text-slate-500 nav-btn"><i class="fas fa-cog mr-1"></i>設定</button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto px-4 pb-24">
-        <section id="view-browse" class="view-content animate-in fade-in duration-300">
-            <div class="view-header flex flex-row items-center justify-between mb-8">
-                <div><h2 class="text-slate-900 font-black flex items-center gap-4"><i class="fas fa-layer-group text-indigo-500"></i> 今日狀況</h2><p class="text-slate-400 font-medium">即時檢視全校/全班各類別登記名單</p></div>
-                <input type="date" id="browse-date" class="px-4 py-2 glass-card rounded-xl font-bold text-slate-600 text-sm outline-none" onchange="renderBrowseView()">
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="browse-content"></div>
-            <div id="browse-empty" class="hidden py-32 text-center glass-card rounded-[2.5rem] text-slate-300"><i class="fas fa-inbox text-4xl mb-4"></i><p>目前沒有記錄</p></div>
-        </section>
-
-        <section id="view-register" class="view-content hidden space-y-8 animate-in fade-in duration-300">
-            <div class="view-header">
-                <h2 class="text-slate-900 font-black flex items-center gap-4"><i class="fas fa-edit text-indigo-500"></i> 資料登記</h2>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-2">
-                    <p class="text-slate-400 font-medium">切換班級並點擊學生登錄</p>
-                    <select id="register-class-filter" class="select-custom bg-white border border-slate-200 px-4 py-1.5 rounded-xl text-xs font-black text-indigo-600 outline-none min-w-[120px]" onchange="renderStudentGrid()"></select>
+    <main class="max-w-6xl mx-auto px-3">
+        <section id="view-browse" class="view-content animate-in fade-in py-4">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                <h2 class="font-black text-lg">今日狀況彙整</h2>
+                <div class="flex gap-2">
+                    <select id="browse-class-filter" class="select-custom bg-white border border-slate-200 pl-3 pr-7 py-1 rounded-lg text-xs font-black text-indigo-600 outline-none" onchange="renderBrowseView()">
+                        <option value="ALL">全部班級</option>
+                    </select>
+                    <input type="date" id="browse-date" class="px-3 py-1 text-xs glass-card rounded-lg outline-none" onchange="renderBrowseView()">
                 </div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div class="lg:col-span-8 space-y-6">
-                    <div class="glass-card rounded-3xl p-6">
-                        <div class="flex items-center justify-between mb-6"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. 選擇類別</span><input type="date" id="register-date" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg" onchange="renderStudentGrid()"></div>
-                        <div id="register-category-selector" class="flex flex-wrap gap-2"></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="browse-content"></div>
+            <div id="browse-empty" class="hidden py-20 text-center text-slate-300"><i class="fas fa-inbox text-3xl mb-2"></i><p class="text-xs">本日無記錄</p></div>
+        </section>
+
+        <section id="view-register" class="view-content hidden py-4 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <select id="register-class-filter" class="select-custom bg-white border border-slate-200 pl-3 pr-7 py-1 rounded-lg text-xs font-black text-indigo-600 outline-none" onchange="renderStudentGrid()"></select>
+                    <input type="date" id="register-date" class="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded-lg" onchange="renderStudentGrid()">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+                    <input type="text" id="student-search" placeholder="搜尋..." class="pl-8 pr-3 py-1 bg-white border border-slate-200 rounded-lg outline-none text-xs w-32 focus:w-44 transition-all" oninput="renderStudentGrid()">
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-3"><div id="register-category-selector" class="flex flex-wrap gap-1.5"></div></div>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div class="lg:col-span-3"><div id="student-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2"></div></div>
+                <div class="lg:col-span-1">
+                    <div class="glass-card rounded-xl overflow-hidden sticky top-20">
+                        <div class="p-3 border-b bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-wider">最近記錄</div>
+                        <div id="recent-records" class="divide-y divide-slate-50 max-h-[400px] overflow-y-auto"></div>
                     </div>
-                    <div class="glass-card rounded-3xl p-6">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. 點擊姓名登記</span>
-                            <div class="relative w-full sm:w-auto"><i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i><input type="text" id="student-search" placeholder="搜尋..." class="pl-10 pr-4 py-2 bg-slate-100 rounded-xl outline-none text-xs w-full sm:w-40 focus:bg-white transition" oninput="renderStudentGrid()"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-stats" class="view-content hidden py-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-black text-lg">報表統計</h2>
+                <div class="flex gap-2">
+                    <select id="stats-class-filter" class="bg-white border text-xs px-2 py-1 rounded-lg font-bold" onchange="renderStats()"></select>
+                    <button onclick="exportToCSV()" class="bg-slate-900 text-white px-3 py-1 rounded-lg text-xs font-bold">匯出</button>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl overflow-hidden">
+                <div class="p-3 bg-slate-50 border-b flex justify-center gap-2">
+                    <input type="date" id="stats-start-date" class="text-[10px] border px-2 py-1 rounded" onchange="renderStats()">
+                    <span class="text-slate-300 text-xs self-center">~</span>
+                    <input type="date" id="stats-end-date" class="text-[10px] border px-2 py-1 rounded" onchange="renderStats()">
+                </div>
+                <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead id="stats-header-row" class="bg-slate-50 text-slate-400 font-black border-b"></thead><tbody id="stats-table-body" class="divide-y"></tbody></table></div>
+            </div>
+        </section>
+
+        <section id="view-settings" class="view-content hidden py-4 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="glass-card rounded-xl p-4">
+                    <h3 class="font-black mb-3 text-sm">學生名單管理</h3>
+                    <textarea id="import-text" class="w-full p-3 bg-slate-50 border rounded-lg h-32 text-[10px] font-mono outline-none mb-2" placeholder="班級 座號 姓名 (空格或逗號分隔)"></textarea>
+                    <button onclick="importStudents()" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-xs font-bold mb-4">批次匯入名單</button>
+                    
+                    <div class="flex justify-between items-end mb-2">
+                        <div id="student-count" class="text-[10px] text-slate-400 font-bold uppercase"></div>
+                        <span class="text-[10px] text-rose-400 font-medium">* 點擊學生右側垃圾桶可刪除單一資料</span>
+                    </div>
+                    <div id="student-list" class="max-h-64 overflow-y-auto border rounded bg-slate-50/50"></div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="glass-card rounded-xl p-4">
+                        <h3 class="font-black mb-3 text-sm">項目類別設定</h3>
+                        <div class="flex gap-2 mb-3">
+                            <input type="text" id="new-category" class="flex-1 px-3 py-1.5 border rounded-lg text-xs" placeholder="新類別...">
+                            <button onclick="addCategory()" class="bg-slate-800 text-white px-3 rounded-lg text-xs"><i class="fas fa-plus"></i></button>
                         </div>
-                        <div id="student-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
-                    </div>
-                </div>
-                <div class="lg:col-span-4">
-                    <div class="glass-card rounded-3xl overflow-hidden sticky top-28">
-                        <div class="p-5 border-b border-slate-100 bg-white/50 font-extrabold text-slate-800 text-xs"><i class="fas fa-history text-indigo-500 mr-2"></i> 最近記錄</div>
-                        <div id="recent-records" class="divide-y divide-slate-50 max-h-[50vh] overflow-y-auto p-1"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="view-stats" class="view-content hidden animate-in fade-in duration-300">
-            <div class="view-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div><h2 class="text-slate-900 font-black flex items-center gap-4"><i class="fas fa-chart-line text-indigo-500"></i> 統計報表</h2><p class="text-slate-400 font-medium">分析與匯出 <select id="stats-class-filter" class="bg-transparent font-black text-indigo-600 outline-none" onchange="renderStats()"></select> 數據</p></div>
-                <button onclick="exportToCSV()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-black transition"><i class="fas fa-download"></i> 匯出報表</button>
-            </div>
-            <div class="glass-card rounded-3xl overflow-hidden">
-                <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-center gap-2">
-                    <input type="date" id="stats-start-date" class="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-[10px] font-bold" onchange="renderStats()">
-                    <i class="fas fa-arrow-right text-[8px] self-center text-slate-300"></i>
-                    <input type="date" id="stats-end-date" class="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-[10px] font-bold" onchange="renderStats()">
-                </div>
-                <div class="overflow-x-auto"><table class="w-full text-left border-collapse min-w-[600px]"><thead id="stats-header-row" class="bg-slate-50/30 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50"></thead><tbody id="stats-table-body" class="divide-y divide-slate-50"></tbody></table></div>
-            </div>
-        </section>
-
-        <section id="view-settings" class="view-content hidden animate-in fade-in duration-300">
-            <div class="view-header mb-8"><h2 class="text-slate-900 font-black flex items-center gap-4"><i class="fas fa-cog text-indigo-500"></i> 系統設定</h2><p class="text-slate-400 font-medium">管理名單、類別與介面</p></div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-6">
-                    <div class="glass-card rounded-3xl p-6">
-                        <h3 class="text-lg font-extrabold mb-6"><i class="fas fa-users text-indigo-500 mr-2"></i> 名單匯入</h3>
-                        <div class="flex gap-2 mb-4">
-                            <button onclick="importStudents()" class="flex-1 bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs">批次匯入</button>
-                            <button onclick="resetToDefaultStudents()" class="px-4 py-2.5 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-black">重置</button>
-                        </div>
-                        <textarea id="import-text" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl h-40 text-[10px] font-mono mb-4 outline-none" placeholder="支援格式：班級 座號 姓名 或 班級,座號,姓名&#10;範例：&#10;101 01 王大明&#10;101 02 李小美&#10;102 01 張小華"></textarea>
-                        <div id="student-count" class="text-[10px] font-black text-indigo-600 mb-2"></div>
-                        <div id="student-list" class="max-h-[300px] overflow-y-auto rounded-xl border bg-slate-50/20"></div>
-                    </div>
-                </div>
-                <div class="space-y-6">
-                    <div class="glass-card rounded-3xl p-6">
-                        <h3 class="text-lg font-extrabold mb-6"><i class="fas fa-tags text-indigo-500 mr-2"></i> 登記項目</h3>
-                        <div class="flex gap-2 mb-4"><input type="text" id="new-category" placeholder="新增..." class="flex-1 px-4 py-2 bg-slate-50 border rounded-xl text-xs font-bold outline-none"><button onclick="addCategory()" class="bg-indigo-600 text-white px-4 rounded-xl hover:bg-indigo-700"><i class="fas fa-plus"></i></button></div>
                         <div id="category-tags" class="flex flex-wrap gap-2"></div>
                     </div>
-                    <div class="glass-card rounded-3xl p-6 border-2 border-dashed border-rose-100 bg-rose-50/30">
-                        <h3 class="text-lg font-extrabold text-rose-600 mb-4">危險區域</h3>
-                        <button onclick="clearAllRecords()" class="w-full mb-2 py-3 bg-white border border-rose-100 rounded-2xl text-rose-600 text-xs font-black hover:bg-rose-600 hover:text-white transition">僅清除所有記錄</button>
-                        <button onclick="factoryReset()" class="w-full py-3 bg-rose-600 text-white rounded-2xl text-xs font-black hover:bg-rose-700 transition">完全重設 (清空所有資料)</button>
+                    <div class="glass-card rounded-xl p-4 bg-rose-50 border-rose-100">
+                        <h3 class="font-black text-rose-600 text-sm mb-3">危險區域</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="clearAllRecords()" class="py-2 bg-white border border-rose-200 text-rose-600 text-[10px] font-black rounded-lg hover:bg-rose-600 hover:text-white">清空點名記錄</button>
+                            <button onclick="factoryReset()" class="py-2 bg-rose-600 text-white text-[10px] font-black rounded-lg hover:bg-rose-700">完全重設系統</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <div id="detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative z-10 overflow-hidden"><div class="p-6 border-b flex justify-between items-center"><div><h4 id="modal-title-name" class="text-xl font-black"></h4><span id="modal-title-cat" class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mt-1 inline-block uppercase"></span></div><button onclick="closeModal()" class="text-slate-300 hover:text-slate-500"><i class="fas fa-times"></i></button></div><div id="modal-content" class="p-4 max-h-[40vh] overflow-y-auto space-y-2"></div></div>
+    <div id="detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-xs overflow-hidden">
+            <div class="p-4 border-b flex justify-between items-center"><h4 id="modal-title" class="font-black"></h4><button onclick="closeModal()" class="text-slate-300 hover:text-slate-600"><i class="fas fa-times"></i></button></div>
+            <div id="modal-content" class="p-4 max-h-60 overflow-y-auto space-y-2"></div>
+        </div>
     </div>
 
     <script>
         const COLORS = ['blue', 'red', 'green', 'orange', 'purple'];
-        const DEFAULT_CATEGORIES = ['作業', '秩序', '午餐', '打掃'];
-        const DEFAULT_STUDENTS_RAW = `101 01 黃元隆\n101 02 張桓毓\n102 01 馮楷峰\n102 02 謝昂哲`;
-
-        const parseStudents = (raw) => {
-            return raw.split('\n').map(l => l.trim()).filter(l => l.length > 0).map(line => {
-                const parts = line.split(/[,\s\t;]+/).filter(p => p.trim().length > 0);
-                if (parts.length >= 3) {
-                    return { id: 's_' + Math.random().toString(36).substr(2, 9), className: parts[0], seatNo: parts[1].padStart(2, '0'), name: parts[2] };
-                } else if (parts.length === 2) {
-                    return { id: 's_' + Math.random().toString(36).substr(2, 9), className: '未分類', seatNo: parts[0].padStart(2, '0'), name: parts[1] };
-                }
-                return null;
-            }).filter(s => s !== null).sort((a,b) => a.className === b.className ? a.seatNo.localeCompare(b.seatNo, undefined, {numeric: true}) : a.className.localeCompare(b.className));
-        };
-
-        let students = JSON.parse(localStorage.getItem('cls_stus_v6')) || parseStudents(DEFAULT_STUDENTS_RAW);
-        let records = JSON.parse(localStorage.getItem('cls_recs_v6')) || [];
-        let categories = JSON.parse(localStorage.getItem('cls_cats_v6')) || DEFAULT_CATEGORIES;
-        let config = JSON.parse(localStorage.getItem('cls_conf_v6')) || { systemName: '常規點名', fontSize: 16 };
+        let students = JSON.parse(localStorage.getItem('cls_stus_v8')) || [];
+        let records = JSON.parse(localStorage.getItem('cls_recs_v8')) || [];
+        let categories = JSON.parse(localStorage.getItem('cls_cats_v8')) || ['作業', '午餐', '打掃', '秩序'];
         let selectedCategory = categories[0];
         let statsSort = { key: 'seatNo', asc: true };
 
         const save = () => {
-            localStorage.setItem('cls_stus_v6', JSON.stringify(students));
-            localStorage.setItem('cls_recs_v6', JSON.stringify(records));
-            localStorage.setItem('cls_cats_v6', JSON.stringify(categories));
-            localStorage.setItem('cls_conf_v6', JSON.stringify(config));
+            localStorage.setItem('cls_stus_v8', JSON.stringify(students));
+            localStorage.setItem('cls_recs_v8', JSON.stringify(records));
+            localStorage.setItem('cls_cats_v8', JSON.stringify(categories));
         };
 
         const getClasses = () => [...new Set(students.map(s => s.className))].sort();
@@ -176,175 +162,160 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`nav-${view}`).classList.add('active');
             
-            const classes = getClasses();
-            if (view === 'register') {
-                const sel = document.getElementById('register-class-filter');
-                const lastVal = sel.value;
-                sel.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
-                if (classes.includes(lastVal)) sel.value = lastVal;
-                renderCategorySelector(); renderStudentGrid(); 
+            const cls = getClasses();
+            if (view === 'browse') {
+                const bSel = document.getElementById('browse-class-filter');
+                const cur = bSel.value;
+                bSel.innerHTML = '<option value="ALL">全部班級</option>' + cls.map(c => `<option value="${c}">${c}</option>`).join('');
+                bSel.value = cur || "ALL";
+                renderBrowseView();
             }
-            if (view === 'browse') renderBrowseView();
+            if (view === 'register') {
+                const rSel = document.getElementById('register-class-filter');
+                const cur = rSel.value;
+                rSel.innerHTML = cls.map(c => `<option value="${c}">${c}</option>`).join('');
+                if (cls.includes(cur)) rSel.value = cur;
+                renderCategorySelector(); renderStudentGrid();
+            }
             if (view === 'stats') {
-                const sel = document.getElementById('stats-class-filter');
-                sel.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                document.getElementById('stats-class-filter').innerHTML = cls.map(c => `<option value="${c}">${c}</option>`).join('');
                 renderStats();
             }
             if (view === 'settings') renderSettings();
         }
 
-        function renderCategorySelector() {
-            document.getElementById('register-category-selector').innerHTML = categories.map(cat => `
-                <button onclick="selectedCategory='${cat}'; renderCategorySelector(); renderStudentGrid();" 
-                class="px-5 py-2 rounded-xl font-black text-xs transition-all ${selectedCategory === cat ? 'btn-active-'+getCatColor(cat) : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
-                ${cat}</button>`).join('');
+        // 核心功能：渲染看板 (支援班級過濾)
+        function renderBrowseView() {
+            const date = document.getElementById('browse-date').value;
+            const filterClass = document.getElementById('browse-class-filter').value;
+            let filtered = records.filter(r => r.date === date);
+            
+            if (filterClass !== "ALL") {
+                filtered = filtered.filter(r => r.className === filterClass);
+            }
+
+            const content = document.getElementById('browse-content');
+            if (filtered.length === 0) { content.innerHTML = ''; document.getElementById('browse-empty').classList.remove('hidden'); return; }
+            document.getElementById('browse-empty').classList.add('hidden');
+
+            content.innerHTML = categories.map(cat => {
+                const catRecs = filtered.filter(r => r.cat === cat);
+                if (catRecs.length === 0) return '';
+                const summary = {}; catRecs.forEach(r => summary[r.sid] = (summary[r.sid] || 0) + 1);
+                return `<div class="glass-card rounded-xl p-4 border-l-4 border-${getCatColor(cat)}-400">
+                    <div class="flex justify-between items-center mb-3"><h4 class="font-black text-sm">${cat}</h4><span class="text-[9px] font-black bg-slate-100 px-1.5 py-0.5 rounded">${catRecs.length} 次</span></div>
+                    <div class="space-y-1">${Object.entries(summary).map(([sid, count]) => {
+                        const s = students.find(x => x.id === sid);
+                        return `<div class="flex justify-between text-xs py-1 border-b border-slate-50"><span>${s?.name || '已刪除'} <small class="text-slate-300 text-[9px]">${s?.className || ''}</small></span><span class="font-black text-${getCatColor(cat)}-500">${count}</span></div>`;
+                    }).join('')}</div></div>`;
+            }).join('');
         }
 
+        // 核心功能：設定頁面 (含刪除學生)
+        function renderSettings() {
+            document.getElementById('student-count').innerText = `目前總人數：${students.length} (共 ${getClasses().length} 班)`;
+            let h = ''; const g = {}; students.forEach(s => { if (!g[s.className]) g[s.className]=[]; g[s.className].push(s); });
+            Object.keys(g).sort().forEach(c => {
+                h += `<div class="bg-indigo-50 px-3 py-1 text-[9px] font-black text-indigo-400 uppercase tracking-wider">${c}</div>`;
+                h += g[c].map(s => `
+                    <div class="p-2 flex justify-between items-center border-b text-[11px] group hover:bg-white transition-colors">
+                        <span class="font-bold">#${s.seatNo} <span class="ml-1 font-black text-slate-700">${s.name}</span></span>
+                        <button onclick="removeStudent('${s.id}')" class="text-slate-200 hover:text-rose-500 p-1"><i class="fas fa-trash-alt"></i></button>
+                    </div>`).join('');
+            });
+            document.getElementById('student-list').innerHTML = h || '<div class="p-8 text-center text-slate-300 text-xs">尚無學生資料</div>';
+            document.getElementById('category-tags').innerHTML = categories.map(c => `<div class="flex items-center gap-2 px-2 py-1 bg-white border rounded text-[10px] font-black shadow-sm"><div class="w-1.5 h-1.5 rounded-full bg-${getCatColor(c)}-400"></div>${c}<button onclick="removeCategory('${c}')" class="text-slate-300 ml-1 hover:text-rose-500">×</button></div>`).join('');
+        }
+
+        function removeStudent(id) {
+            const s = students.find(x => x.id === id);
+            if (confirm(`確定要刪除「${s.className} ${s.name}」嗎？\n(相關的點名記錄仍會保留在統計中，但姓名會顯示為「已刪除」)`)) {
+                students = students.filter(x => x.id !== id);
+                save();
+                renderSettings();
+            }
+        }
+
+        // 其他基礎功能
+        function parseStudents(raw) {
+            return raw.split('\n').map(l => l.trim()).filter(l => l).map(line => {
+                const p = line.split(/[,\s\t;]+/).filter(x => x.trim());
+                if (p.length >= 3) return { id: 's_'+Math.random().toString(36).substr(2,7), className: p[0], seatNo: p[1].padStart(2,'0'), name: p[2] };
+                if (p.length === 2) return { id: 's_'+Math.random().toString(36).substr(2,7), className: '未分類', seatNo: p[0].padStart(2,'0'), name: p[1] };
+                return null;
+            }).filter(x => x).sort((a,b) => a.className === b.className ? a.seatNo.localeCompare(b.seatNo, undefined, {numeric:true}) : a.className.localeCompare(b.className));
+        }
+
+        function importStudents() { const raw = document.getElementById('import-text').value.trim(); if (raw) { const news = parseStudents(raw); students = [...students, ...news]; save(); renderSettings(); document.getElementById('import-text').value=''; alert('匯入成功'); } }
+        function renderCategorySelector() { document.getElementById('register-category-selector').innerHTML = categories.map(cat => `<button onclick="selectedCategory='${cat}'; renderCategorySelector(); renderStudentGrid();" class="px-3 py-1.5 rounded-lg font-black text-[10px] transition-all ${selectedCategory === cat ? 'btn-active-'+getCatColor(cat) : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">${cat}</button>`).join(''); }
         function renderStudentGrid() {
             const search = document.getElementById('student-search').value.toLowerCase();
             const date = document.getElementById('register-date').value;
             const targetClass = document.getElementById('register-class-filter').value;
             const filtered = students.filter(s => s.className === targetClass && (s.name.includes(search) || s.seatNo.includes(search)));
-            
             document.getElementById('student-grid').innerHTML = filtered.map(s => {
                 const count = records.filter(r => r.sid === s.id && r.date === date && r.cat === selectedCategory).length;
                 const color = getCatColor(selectedCategory);
-                return `<button onclick="addRecord('${s.id}')" class="student-card p-4 bg-white rounded-2xl text-left">
-                    <span class="text-[9px] font-black text-slate-300">#${s.seatNo}</span>
-                    <div class="text-base font-black text-slate-800 mb-2">${s.name}</div>
-                    <div class="flex justify-between items-center">
-                        <div class="flex gap-1">${Array(Math.min(count, 3)).fill(`<div class="w-1.5 h-1.5 rounded-full bg-${color}-400"></div>`).join('')}</div>
-                        <span class="text-xl font-black ${count > 0 ? 'text-'+color+'-500' : 'text-slate-100'}">${count}</span>
-                    </div></button>`;
+                return `<button onclick="addRecord('${s.id}')" class="student-card glass-card rounded-xl text-left"><div class="flex items-center justify-between mb-1"><span class="text-[8px] font-black text-slate-300">#${s.seatNo}</span><span class="text-xs font-black ${count > 0 ? 'text-'+color+'-500' : 'text-slate-200'}">${count}</span></div><div class="text-sm font-bold text-slate-700 truncate mb-1">${s.name}</div><div class="flex gap-0.5 h-1">${Array(Math.min(count, 4)).fill(`<div class="w-full h-full rounded-full bg-${color}-400"></div>`).join('')}</div></button>`;
             }).join('');
             renderRecentRecords();
         }
-
-        function addRecord(sid) {
-            const s = students.find(x => x.id === sid);
-            const date = document.getElementById('register-date').value;
-            records.unshift({ id: Date.now(), sid, name: s.name, className: s.className, cat: selectedCategory, date, time: new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' }) });
-            save(); renderStudentGrid();
-        }
-
-        function renderRecentRecords() {
-            document.getElementById('recent-records').innerHTML = records.slice(0, 10).map(r => `
-                <div class="py-2 px-3 flex justify-between items-center group hover:bg-slate-50">
-                    <div class="flex items-center gap-3">
-                        <div class="w-1 h-5 rounded-full bg-${getCatColor(r.cat)}-400"></div>
-                        <div class="flex flex-col"><span class="font-bold text-slate-700 text-xs">${r.name} <small class="text-slate-300">${r.className}</small></span><span class="text-[9px] text-slate-400 font-bold">${r.cat} · ${r.time}</span></div>
-                    </div>
-                    <button onclick="deleteRecord(${r.id})" class="text-slate-200 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition px-2"><i class="fas fa-trash-can text-[10px]"></i></button>
-                </div>`).join('');
-        }
-
+        function addRecord(sid) { const s = students.find(x => x.id === sid); records.unshift({ id: Date.now(), sid, name: s.name, className: s.className, cat: selectedCategory, date: document.getElementById('register-date').value, time: new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' }) }); save(); renderStudentGrid(); }
+        function renderRecentRecords() { document.getElementById('recent-records').innerHTML = records.slice(0, 8).map(r => `<div class="p-2 flex justify-between items-center group hover:bg-slate-50"><div class="flex items-center gap-2"><div class="w-0.5 h-4 bg-${getCatColor(r.cat)}-400"></div><div class="flex flex-col"><span class="font-bold text-slate-700 text-[11px]">${r.name}</span><span class="text-[8px] text-slate-400 font-bold uppercase">${r.cat} · ${r.time}</span></div></div><button onclick="deleteRecord(${r.id})" class="text-slate-200 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition px-1"><i class="fas fa-trash text-[10px]"></i></button></div>`).join(''); }
         function deleteRecord(id) { records = records.filter(r => r.id !== id); save(); renderStudentGrid(); }
-
-        function renderBrowseView() {
-            const date = document.getElementById('browse-date').value;
-            const filtered = records.filter(r => r.date === date);
-            const content = document.getElementById('browse-content');
-            const empty = document.getElementById('browse-empty');
-            if (filtered.length === 0) { content.innerHTML = ''; empty.classList.remove('hidden'); return; }
-            empty.classList.add('hidden');
-            content.innerHTML = categories.map(cat => {
-                const catRecs = filtered.filter(r => r.cat === cat);
-                if (catRecs.length === 0) return '';
-                const summary = {};
-                catRecs.forEach(r => summary[r.sid] = (summary[r.sid] || 0) + 1);
-                return `<div class="glass-card rounded-3xl p-6 border-b-4 border-${getCatColor(cat)}-400">
-                    <div class="flex items-center justify-between mb-4"><h4 class="font-black text-slate-800">${cat}</h4><span class="text-[9px] font-black bg-slate-100 px-2 py-1 rounded">${catRecs.length} 次</span></div>
-                    <div class="space-y-1">${Object.entries(summary).map(([sid, count]) => {
-                        const s = students.find(x => x.id === sid);
-                        return `<div class="py-2 px-4 rounded-xl bg-white/50 flex justify-between items-center border border-slate-50"><span class="font-bold text-slate-600 text-sm">${s?.name || '已移除'} <small class="text-slate-300 text-[10px]">${s?.className || ''}</small></span><span class="font-black text-${getCatColor(cat)}-500">${count}</span></div>`;
-                    }).join('')}</div></div>`;
-            }).join('');
-        }
-
         function renderStats() {
             const start = document.getElementById('stats-start-date').value;
             const end = document.getElementById('stats-end-date').value;
-            const targetClass = document.getElementById('stats-class-filter').value;
-            const filteredRecs = records.filter(r => r.date >= start && r.date <= end);
-            const classStudents = students.filter(s => s.className === targetClass);
-            
-            const data = classStudents.map(s => {
-                const sRecs = filteredRecs.filter(r => r.sid === s.id);
-                const obj = { id: s.id, seatNo: s.seatNo, name: s.name, total: sRecs.length };
-                categories.forEach(cat => obj[cat] = sRecs.filter(r => r.cat === cat).length);
-                return obj;
+            const cls = document.getElementById('stats-class-filter').value;
+            const fRecs = records.filter(r => r.date >= start && r.date <= end);
+            const data = students.filter(s => s.className === cls).map(s => {
+                const sR = fRecs.filter(r => r.sid === s.id);
+                const o = { id: s.id, seatNo: s.seatNo, name: s.name, total: sR.length };
+                categories.forEach(c => o[c] = sR.filter(r => r.cat === c).length);
+                return o;
             }).sort((a,b) => {
                 let vA = a[statsSort.key], vB = b[statsSort.key];
                 if (!isNaN(vA)) { vA = Number(vA); vB = Number(vB); }
                 return statsSort.asc ? (vA > vB ? 1 : -1) : (vA < vB ? 1 : -1);
             });
-
-            document.getElementById('stats-header-row').innerHTML = `<tr class="border-b"><th onclick="toggleSort('seatNo')" class="cursor-pointer py-4 px-4 text-center">座號</th><th onclick="toggleSort('name')" class="cursor-pointer py-4 px-4">姓名</th>${categories.map(cat => `<th onclick="toggleSort('${cat}')" class="cursor-pointer py-4 px-4 text-center">${cat}</th>`).join('')}<th onclick="toggleSort('total')" class="cursor-pointer py-4 px-4 text-center bg-indigo-50/50">合計</th></tr>`;
-            document.getElementById('stats-table-body').innerHTML = data.map(row => `<tr><td class="py-3 px-4 text-center text-[10px] font-mono font-bold text-slate-300">${row.seatNo}</td><td class="py-3 px-4 font-black text-slate-700 text-sm">${row.name}</td>${categories.map(cat => `<td class="py-3 px-4 text-center"><button onclick="showDetails('${row.id}', '${cat}')" class="w-8 h-8 rounded-lg font-black text-xs transition ${row[cat] > 0 ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white' : 'text-slate-100'}">${row[cat]}</button></td>`).join('')}<td class="py-3 px-4 text-center font-black text-indigo-700 bg-indigo-50/20 text-base">${row.total}</td></tr>`).join('');
+            document.getElementById('stats-header-row').innerHTML = `<tr><th onclick="toggleSort('seatNo')" class="p-3 text-center cursor-pointer">#</th><th onclick="toggleSort('name')" class="p-3 cursor-pointer">姓名</th>${categories.map(c => `<th onclick="toggleSort('${c}')" class="p-3 text-center cursor-pointer">${c}</th>`).join('')}<th onclick="toggleSort('total')" class="p-3 text-center cursor-pointer bg-slate-100/50">合</th></tr>`;
+            document.getElementById('stats-table-body').innerHTML = data.map(r => `<tr><td class="p-2 text-center text-slate-300 font-mono">${r.seatNo}</td><td class="p-2 font-bold">${r.name}</td>${categories.map(c => `<td class="p-2 text-center"><button onclick="showDetails('${r.id}','${c}')" class="w-6 h-6 rounded text-[10px] font-black ${r[c]>0 ? 'bg-indigo-50 text-indigo-600':'text-slate-100'}">${r[c]}</button></td>`).join('')}<td class="p-2 text-center font-black text-indigo-600 bg-indigo-50/20">${r.total}</td></tr>`).join('');
         }
-
         function toggleSort(k) { statsSort.asc = statsSort.key === k ? !statsSort.asc : true; statsSort.key = k; renderStats(); }
-
         function showDetails(sid, cat) {
             const s = students.find(x => x.id === sid);
-            const start = document.getElementById('stats-start-date').value;
-            const end = document.getElementById('stats-end-date').value;
-            const filtered = records.filter(r => r.sid === sid && r.cat === cat && r.date >= start && r.date <= end);
-            if (filtered.length === 0) return;
-            document.getElementById('modal-title-name').innerText = s.name;
-            document.getElementById('modal-title-cat').innerText = cat;
-            document.getElementById('modal-content').innerHTML = filtered.map(r => `<div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border group"><div><span class="text-[10px] font-black text-slate-600">${r.date}</span> <span class="text-[9px] font-bold text-slate-300 ml-2">${r.time}</span></div><button onclick="deleteInModal(${r.id}, '${sid}', '${cat}')" class="w-7 h-7 rounded-full bg-white text-rose-300 hover:text-rose-500 shadow-sm transition"><i class="fas fa-trash-can text-[10px]"></i></button></div>`).join('');
+            const filtered = records.filter(r => r.sid === sid && r.cat === cat && r.date >= document.getElementById('stats-start-date').value && r.date <= document.getElementById('stats-end-date').value);
+            if (!filtered.length) return;
+            document.getElementById('modal-title').innerText = `${s?.name || '已刪除'} - ${cat}`;
+            document.getElementById('modal-content').innerHTML = filtered.map(r => `<div class="flex justify-between items-center p-2 bg-slate-50 rounded border text-[10px]"><span>${r.date} ${r.time}</span><button onclick="deleteInModal(${r.id},'${sid}','${cat}')" class="text-rose-300 hover:text-rose-500"><i class="fas fa-trash"></i></button></div>`).join('');
             document.getElementById('detail-modal').classList.remove('hidden');
         }
-
-        function deleteInModal(rid, sid, cat) { records = records.filter(r => r.id !== rid); save(); renderStats(); showDetails(sid, cat); if (records.filter(r => r.sid === sid && r.cat === cat).length === 0) closeModal(); }
+        function deleteInModal(rid, sid, cat) { records = records.filter(r => r.id !== rid); save(); renderStats(); showDetails(sid, cat); if (!records.filter(r => r.sid === sid && r.cat === cat).length) closeModal(); }
         function closeModal() { document.getElementById('detail-modal').classList.add('hidden'); }
-
-        function renderSettings() {
-            document.getElementById('student-count').innerText = `總人數：${students.length} (共 ${getClasses().length} 班)`;
-            let listHtml = '';
-            const grouped = {}; students.forEach(s => { if (!grouped[s.className]) grouped[s.className] = []; grouped[s.className].push(s); });
-            Object.keys(grouped).sort().forEach(cls => {
-                listHtml += `<div class="bg-indigo-50 px-4 py-1 text-[10px] font-black text-indigo-400 uppercase">${cls}</div>`;
-                listHtml += grouped[cls].map(s => `<div class="py-2 px-4 flex justify-between items-center group border-b text-xs"><span class="font-bold">#${s.seatNo} <span class="ml-2 font-black">${s.name}</span></span><button onclick="removeStudent('${s.id}')" class="text-slate-200 hover:text-rose-500 opacity-0 group-hover:opacity-100"><i class="fas fa-minus-circle"></i></button></div>`).join('');
-            });
-            document.getElementById('student-list').innerHTML = listHtml;
-            document.getElementById('category-tags').innerHTML = categories.map(cat => `<div class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border text-[10px] font-black shadow-sm"><div class="w-1.5 h-1.5 rounded-full bg-${getCatColor(cat)}-400"></div> ${cat} <button onclick="removeCategory('${cat}')" class="text-slate-300 hover:text-rose-500 ml-1"><i class="fas fa-times"></i></button></div>`).join('');
-        }
-
-        function importStudents() {
-            const raw = document.getElementById('import-text').value.trim();
-            if (!raw) return;
-            students = parseStudents(raw); save(); renderSettings(); document.getElementById('import-text').value = ''; alert('名單匯入完成！');
-        }
-
-        function resetToDefaultStudents() { if (confirm('重置為預設名單？')) { students = parseStudents(DEFAULT_STUDENTS_RAW); save(); renderSettings(); } }
-        function addCategory() { const v = document.getElementById('new-category').value.trim(); if (v && !categories.includes(v)) { categories.push(v); save(); renderSettings(); document.getElementById('new-category').value = ''; } }
-        function removeCategory(cat) { if (categories.length > 1 && confirm(`移除「${cat}」？`)) { categories = categories.filter(c => c !== cat); save(); renderSettings(); } }
-        function removeStudent(id) { if (confirm('移除該學生？')) { students = students.filter(s => s.id !== id); save(); renderSettings(); } }
-        function clearAllRecords() { if (confirm('確定清除所有歷史記錄？')) { records = []; save(); switchView('browse'); } }
-        function factoryReset() { if (confirm('🚨 完全重設會清空所有資料，確定嗎？')) { localStorage.clear(); location.reload(); } }
-
+        function addCategory() { const v = document.getElementById('new-category').value.trim(); if (v && !categories.includes(v)) { categories.push(v); save(); renderSettings(); document.getElementById('new-category').value=''; } }
+        function removeCategory(c) { if (categories.length > 1 && confirm(`移除 ${c}?`)) { categories = categories.filter(x => x!==c); save(); renderSettings(); } }
+        function clearAllRecords() { if (confirm('確定清除所有記錄?')) { records=[]; save(); switchView('browse'); } }
+        function factoryReset() { if (confirm('🚨 警告：這將刪除所有學生與紀錄！確定重設嗎？')) { localStorage.clear(); location.reload(); } }
         function exportToCSV() {
             const start = document.getElementById('stats-start-date').value;
             const end = document.getElementById('stats-end-date').value;
-            const targetClass = document.getElementById('stats-class-filter').value;
-            const filtered = records.filter(r => r.date >= start && r.date <= end);
+            const cls = document.getElementById('stats-class-filter').value;
+            const f = records.filter(r => r.date >= start && r.date <= end);
             let csv = "\ufeff班級,座號,姓名," + categories.join(",") + ",總計\n";
-            students.filter(s => s.className === targetClass).forEach(s => {
-                const sRecs = filtered.filter(r => r.sid === s.id);
-                csv += [s.className, s.seatNo, s.name, ...categories.map(cat => sRecs.filter(r => r.cat === cat).length), sRecs.length].join(",") + "\n";
+            students.filter(s => s.className === cls).forEach(s => {
+                const sR = f.filter(r => r.sid === s.id);
+                csv += [s.className, s.seatNo, s.name, ...categories.map(c => sR.filter(r => r.cat === c).length), sR.length].join(",") + "\n";
             });
-            const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); a.download = `[${targetClass}]報表_${start}_${end}.csv`; a.click();
+            const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); a.download = `[${cls}]報表_${start}_${end}.csv`; a.click();
         }
 
         window.onload = () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('register-date').value = today;
-            document.getElementById('browse-date').value = today;
-            const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
-            document.getElementById('stats-start-date').value = weekAgo.toISOString().split('T')[0];
-            document.getElementById('stats-end-date').value = today;
+            const t = new Date().toISOString().split('T')[0];
+            document.getElementById('register-date').value = t;
+            document.getElementById('browse-date').value = t;
+            const w = new Date(); w.setDate(w.getDate() - 7);
+            document.getElementById('stats-start-date').value = w.toISOString().split('T')[0];
+            document.getElementById('stats-end-date').value = t;
             switchView('browse');
         };
     </script>
