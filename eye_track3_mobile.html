@@ -3,26 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 監控 - Pixel 6 優化版</title>
+    <title>AI 監控 - 手機加大版</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1a1a1a; color: #eee; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; touch-action: manipulation; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #1a1a1a; 
+            color: #eee; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 10px; 
+            margin: 0; 
+            touch-action: manipulation;
+            /* 全局字體加大 */
+            font-size: 18px; 
+        }
+        
         .ui-width { width: 95vw; max-width: 800px; box-sizing: border-box; }
-        .tg-config { background: #2c3e50; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #444; }
-        .config-row { display: flex; gap: 5px; margin-bottom: 8px; }
-        .switch-group { display: flex; justify-content: space-around; font-size: 12px; border-top: 1px solid #3e4f5f; padding-top: 8px; }
-        .controls { background: #333; padding: 10px; border-radius: 8px; display: flex; gap: 8px; margin-bottom: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-        .stats-panel-mini { background: #222; padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #444; display: flex; justify-content: space-between; font-size: 0.85rem; }
-        .stat-value { font-weight: bold; color: #00ff88; }
+
+        .tg-config { background: #2c3e50; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #444; }
+        .config-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .config-row input[type="text"] { font-size: 16px; padding: 12px; } /* 輸入框字體加大 */
+
+        .switch-group { 
+            display: flex; 
+            justify-content: space-around; 
+            font-size: 18px; /* 開關文字加大 */
+            border-top: 1px solid #3e4f5f; 
+            padding-top: 12px; 
+        }
+        
+        .controls { 
+            background: #333; 
+            padding: 15px; 
+            border-radius: 12px; 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 10px; 
+            align-items: center; 
+            justify-content: space-between; 
+            flex-wrap: wrap; 
+        }
+
+        .stats-panel-mini { 
+            background: #222; 
+            padding: 12px 15px; 
+            border-radius: 12px; 
+            margin-bottom: 10px; 
+            border: 1px solid #444; 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 1.1rem; /* 數據面板字體加大 */
+            font-weight: bold;
+        }
+        .stat-value { color: #00ff88; }
         .stat-value.danger { color: #ff4444; }
-        .container { position: relative; border: 2px solid #444; border-radius: 8px; overflow: hidden; background: #000; width: 95vw; max-width: 800px; aspect-ratio: 4/3; }
-        /* Pixel 6 前鏡頭鏡像處理 */
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform: scaleX(-1); }
-        button, select, input[type="text"] { padding: 10px; border-radius: 4px; border: none; background: #444; color: white; font-size: 14px; }
-        #resetBtn { background: #dc3545; flex-grow: 1; font-weight: bold; }
-        .log-panel { height: 100px; overflow-y: auto; background: #000; padding: 8px; font-size: 11px; color: #aaa; border-radius: 8px; border: 1px solid #333; margin-top: 8px; width: 95vw; }
-        .log-entry { margin-bottom: 2px; border-left: 2px solid #444; padding-left: 5px; }
-        label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
+        .container { position: relative; border: 2px solid #444; border-radius: 12px; overflow: hidden; background: #000; width: 95vw; max-width: 800px; aspect-ratio: 4/3; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+        
+        /* 預設前鏡頭鏡像 */
+        .mirror video, .mirror canvas { transform: scaleX(-1); }
+        
+        /* 按鈕和下拉選單字體加大 */
+        button, select, input[type="text"] { 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: none; 
+            background: #444; 
+            color: white; 
+            font-size: 16px; 
+            font-weight: bold;
+        }
+        
+        /* 功能按鈕 */
+        .action-btn { background: #555; flex: 1; text-align: center; }
+        #resetBtn { background: #dc3545; }
+        #switchCamBtn { background: #3498db; }
+        
+        .log-panel { 
+            height: 120px; /* Log 面板加大 */
+            overflow-y: auto; 
+            background: #000; 
+            padding: 10px; 
+            font-size: 14px; /* Log 字體加大 */
+            color: #aaa; 
+            border-radius: 12px; 
+            border: 1px solid #333; 
+            margin-top: 10px; 
+            width: 95vw; 
+            max-width: 800px;
+        }
+        .log-entry { margin-bottom: 4px; border-left: 3px solid #444; padding-left: 8px; }
+        label { cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        label input[type="checkbox"] { transform: scale(1.5); } /* 加大 Checkbox */
     </style>
 </head>
 <body>
@@ -34,18 +109,19 @@
         </div>
         <div class="switch-group">
             <label><input type="checkbox" id="enableTG"> Telegram 上傳</label>
-            <label><input type="checkbox" id="enableDownload" checked> 本機下載截圖</label>
+            <label><input type="checkbox" id="enableDownload" checked> 本機下載</label>
         </div>
     </div>
 
     <div class="controls ui-width">
-        <select id="thresholdSelect" style="flex: 1;">
+        <select id="thresholdSelect" style="flex: 1.2;">
             <option value="0">不處理</option>
             <option value="3">3s 門檻</option>
             <option value="5">5s 門檻</option>
             <option value="10" selected>10s 門檻</option>
         </select>
-        <button id="resetBtn">重置數據 / 重新鎖定</button>
+        <button id="switchCamBtn" class="action-btn">切換相機</button>
+        <button id="resetBtn" class="action-btn">重置</button>
     </div>
 
     <div class="stats-panel-mini ui-width">
@@ -55,12 +131,12 @@
         <div>失:<span id="time-lost" class="stat-value danger">0.0s</span></div>
     </div>
 
-    <div class="container" id="videoContainer">
+    <div class="container mirror" id="videoContainer">
         <video id="webcam" autoplay playsinline muted></video>
         <canvas id="output_canvas"></canvas>
     </div>
 
-    <div class="log-panel ui-width" id="logPanel">等待系統初始化...</div>
+    <div class="log-panel ui-width" id="logPanel">初始化中...</div>
 
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
@@ -69,6 +145,7 @@
         const canvas = document.getElementById("output_canvas");
         const ctx = canvas.getContext("2d");
         const logPanel = document.getElementById("logPanel");
+        const videoContainer = document.getElementById("videoContainer");
         
         let stats = { front: 0, left: 0, right: 0, lost: 0 };
         let currentContinuousTime = 0;
@@ -76,6 +153,10 @@
         let hasScreenshotTaken = false;
         let lastTimestamp = performance.now();
         let faceLandmarker, results = null, isTracking = false, targetFacePos = null;
+
+        // 相機狀態
+        let currentFacingMode = "user"; // 預設前鏡頭
+        let currentStream = null;
 
         function addLog(msg, color = "#aaa") {
             const div = document.createElement("div");
@@ -106,52 +187,81 @@
             }
         }
 
+        // 核心：啟動相機
         async function setupCamera() {
-            addLog("正在調用鏡頭權限...");
+            // 停止舊的 Stream
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            addLog(`正在呼叫 ${currentFacingMode === "user" ? "前置" : "後置"} 鏡頭...`);
+            
+            // 處理鏡像樣式
+            if (currentFacingMode === "user") {
+                videoContainer.classList.add("mirror");
+            } else {
+                videoContainer.classList.remove("mirror");
+            }
+
             const constraints = {
                 video: {
-                    facingMode: "user",
+                    facingMode: currentFacingMode,
+                    // Pixel 6 防呆：不強求特定解析度，只給理想值
                     width: { ideal: 640 },
                     height: { ideal: 480 }
                 }
             };
 
             try {
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
                 return new Promise((resolve) => {
                     video.onloadedmetadata = () => {
+                        // 確保畫布尺寸與影片一致
                         canvas.width = video.videoWidth;
                         canvas.height = video.videoHeight;
-                        addLog("相機就緒，請點擊畫面中的臉部進行鎖定");
+                        addLog("相機啟動成功，點擊畫面鎖定臉部");
+                        // 相機切換後重置鎖定狀態
+                        isTracking = false;
+                        targetFacePos = null;
                         resolve();
                     };
                 });
             } catch (err) {
-                addLog(`相機啟動失敗: ${err.name}`, "#ff4444");
+                addLog(`相機失敗: ${err.name} - ${err.message}`, "#ff4444");
                 if (err.name === "OverconstrainedError") {
                     addLog("嘗試降級設定以符合裝置限制...", "#f1c40f");
                     const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.srcObject = fallbackStream;
+                    currentStream = fallbackStream;
                 }
             }
         }
 
+        // 觸控鎖定座標轉換
         const handleInteraction = (e) => {
+            if (video.readyState < 2) return;
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            // 配合 CSS 鏡像效果進行座標計算
-            const clickX = 1 - (clientX - rect.left) / rect.width;
-            const clickY = (clientY - rect.top) / rect.height;
+            // 計算在 4/3 Container 中的相對座標 (0~1)
+            let clickX = (clientX - rect.left) / rect.width;
+            let clickY = (clientY - rect.top) / rect.height;
+
+            // 如果是前鏡頭（鏡像模式），水平座標需要反轉
+            if (currentFacingMode === "user") {
+                clickX = 1 - clickX;
+            }
 
             if (results?.faceLandmarks) {
+                // 擴大鎖定範圍
                 results.faceLandmarks.forEach(landmarks => {
-                    if (Math.hypot(clickX - landmarks[1].x, clickY - landmarks[1].y) < 0.2) {
-                        targetFacePos = { x: landmarks[1].x, y: landmarks[1].y };
+                    const noseBridge = landmarks[1]; // 鼻樑點
+                    if (Math.hypot(clickX - noseBridge.x, clickY - noseBridge.y) < 0.25) {
+                        targetFacePos = { x: noseBridge.x, y: noseBridge.y };
                         isTracking = true;
-                        addLog("目標臉部已鎖定", "#00ff88");
+                        addLog("目標已鎖定", "#00ff88");
                     }
                 });
             }
@@ -160,6 +270,13 @@
         canvas.addEventListener("touchstart", (e) => { e.preventDefault(); handleInteraction(e); }, {passive: false});
         canvas.addEventListener("mousedown", handleInteraction);
 
+        // 切換相機按鈕
+        document.getElementById("switchCamBtn").onclick = async () => {
+            currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
+            await setupCamera();
+        };
+
+        // 截圖與傳送
         function takeScreenshot(stateName, duration) {
             const isDownloadEnabled = document.getElementById("enableDownload").checked;
             const isTGEnabled = document.getElementById("enableTG").checked;
@@ -169,18 +286,20 @@
             tempCanvas.height = video.videoHeight;
             const tCtx = tempCanvas.getContext("2d");
             
-            // 截圖存檔時轉回正常視角
-            tCtx.translate(tempCanvas.width, 0);
-            tCtx.scale(-1, 1);
+            // 截圖存檔時轉回正常視角（不論前/後鏡頭）
+            if (currentFacingMode === "user") {
+                tCtx.translate(tempCanvas.width, 0);
+                tCtx.scale(-1, 1);
+            }
             tCtx.drawImage(video, 0, 0);
             tCtx.setTransform(1, 0, 0, 1, 0, 0);
 
             const timeStr = new Date().toLocaleString();
             tCtx.fillStyle = "rgba(0,0,0,0.6)";
-            tCtx.fillRect(0, 0, tempCanvas.width, 40);
+            tCtx.fillRect(0, 0, tempCanvas.width, 60); // 黑底加大
             tCtx.fillStyle = "#0ff";
-            tCtx.font = "20px Arial";
-            tCtx.fillText(`${stateName}持續 ${duration.toFixed(1)}s - ${timeStr}`, 10, 28);
+            tCtx.font = "bold 26px Arial"; // 截圖字體加大
+            tCtx.fillText(`${stateName}持續 ${duration.toFixed(1)}s - ${timeStr}`, 15, 40);
 
             tempCanvas.toBlob((blob) => {
                 if (isDownloadEnabled) {
@@ -188,7 +307,7 @@
                     link.download = `Alert_${Date.now()}.png`;
                     link.href = URL.createObjectURL(blob);
                     link.click();
-                    addLog("警報截圖已下載", "#00ff88");
+                    addLog("截圖已下載", "#00ff88");
                 }
                 if (isTGEnabled) {
                     const token = document.getElementById("tgToken").value;
@@ -199,18 +318,20 @@
                         formData.append("caption", `⚠️ 警報通知: ${stateName}持續 ${duration.toFixed(1)} 秒`);
                         formData.append("photo", blob);
                         fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: "POST", body: formData })
-                        .then(r => { if(r.ok) addLog("Telegram 已成功傳送", "#3498db"); });
+                        .then(r => { if(r.ok) addLog("Telegram 已傳送", "#3498db"); });
                     }
                 }
             }, "image/png");
         }
 
+        // 主迴圈
         function renderLoop() {
             const now = performance.now();
             const deltaTime = (now - lastTimestamp) / 1000;
             lastTimestamp = now;
 
             if (video.readyState >= 2) {
+                // MediaPipe 模型偵測
                 results = faceLandmarker.detectForVideo(video, now);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -219,14 +340,17 @@
 
                 if (results.faceLandmarks) {
                     results.faceLandmarks.forEach(landmarks => {
-                        if (isTracking && targetFacePos && Math.hypot(landmarks[1].x - targetFacePos.x, landmarks[1].y - targetFacePos.y) < 0.3) {
+                        // 追蹤邏輯：尋找距離上次鎖定位置最近的臉
+                        if (isTracking && targetFacePos && Math.hypot(landmarks[1].x - targetFacePos.x, landmarks[1].y - targetFacePos.y) < 0.35) {
                             activeFace = landmarks;
+                            // 更新追蹤位置
                             targetFacePos = { x: landmarks[1].x, y: landmarks[1].y };
                         }
-                        drawUI(landmarks, false);
+                        drawUI(landmarks, false); // 繪製未被鎖定的臉部（暗色）
                     });
                 }
 
+                // 統計與警報
                 if (isTracking) {
                     if (activeFace) {
                         const ratio = (activeFace[1].x - activeFace[234].x) / (activeFace[454].x - activeFace[234].x);
@@ -239,15 +363,18 @@
                         stats.lost += deltaTime;
                     }
 
+                    // 連續狀態計時
                     if (currentState === lastState) currentContinuousTime += deltaTime;
                     else { currentContinuousTime = 0; hasScreenshotTaken = false; }
                     lastState = currentState;
 
+                    // 警報觸發
                     const threshold = parseFloat(document.getElementById("thresholdSelect").value);
                     if (threshold > 0 && currentState !== "正臉" && currentState !== "none" && currentContinuousTime >= threshold && !hasScreenshotTaken) {
                         takeScreenshot(currentState, currentContinuousTime);
                         hasScreenshotTaken = true;
                     }
+                    // 繪製追蹤中的臉部（亮綠色）
                     drawUI(activeFace, true, `${currentState} ${currentContinuousTime.toFixed(1)}s`);
                 }
                 updateDashboard();
@@ -255,6 +382,7 @@
             requestAnimationFrame(renderLoop);
         }
 
+        // 更新數據面板
         function updateDashboard() {
             document.getElementById("time-front").innerText = stats.front.toFixed(1) + "s";
             document.getElementById("time-left").innerText = stats.left.toFixed(1) + "s";
@@ -262,31 +390,41 @@
             document.getElementById("time-lost").innerText = stats.lost.toFixed(1) + "s";
         }
 
+        // 畫布 UI 繪製
         function drawUI(landmarks, isTarget, label = "") {
             if (!landmarks) return;
             ctx.strokeStyle = isTarget ? "#00ff88" : "rgba(255,255,255,0.2)";
-            ctx.lineWidth = isTarget ? 3 : 1;
+            ctx.lineWidth = isTarget ? 4 : 1; // 追蹤框加大
             
+            // 畫雙眼
             [468, 473].forEach(i => {
                 const p = landmarks[i];
-                ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, 2*Math.PI); ctx.stroke();
+                ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, 5, 0, 2*Math.PI); ctx.stroke();
             });
 
+            // 畫狀態文字
             if (isTarget) {
-                ctx.fillStyle = "#00ff88"; ctx.font = "bold 24px Arial";
-                // 修正文字位置避免受鏡像翻轉影響
-                ctx.save();
-                ctx.scale(-1, 1);
-                ctx.fillText(label, -(landmarks[10].x * canvas.width), landmarks[10].y * canvas.height - 20);
-                ctx.restore();
+                ctx.fillStyle = "#00ff88"; 
+                ctx.font = "bold 30px Arial"; // 畫面文字加大
+
+                // 如果是前鏡頭（鏡像模式），文字需要反轉畫回來
+                if (currentFacingMode === "user") {
+                    ctx.save();
+                    ctx.scale(-1, 1);
+                    ctx.fillText(label, -(landmarks[10].x * canvas.width), landmarks[10].y * canvas.height - 25);
+                    ctx.restore();
+                } else {
+                    ctx.fillText(label, landmarks[10].x * canvas.width, landmarks[10].y * canvas.height - 25);
+                }
             }
         }
 
+        // 重置按鈕
         document.getElementById("resetBtn").onclick = () => { 
             stats = { front: 0, left: 0, right: 0, lost: 0 }; 
             isTracking = false; 
             targetFacePos = null;
-            addLog("系統重置，請重新鎖定臉部", "#dc3545");
+            addLog("數據已重置，請重新鎖定臉部", "#dc3545");
         };
 
         init();
