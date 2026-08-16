@@ -1,10 +1,95 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>你好，GitHub</title>
-  </head>
-  <body>
-    <h1>厲害 GitHub </h1>
-  </body>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="國民中學教師與班級課表三欄對照系統">
+  <title>國民中學｜課表對照系統</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">JUNIOR HIGH SCHOOL</p>
+      <h1 id="siteTitle">教師課表查詢與多欄並排對照</h1>
+    </div>
+    <div class="header-actions">
+      <button id="adminButton" class="button ghost" type="button">系統管理</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="control-panel" aria-label="課表查詢設定">
+      <div class="control">
+        <label for="classSelect">班級查詢</label>
+        <select id="classSelect"></select>
+      </div>
+      <div class="control">
+        <label for="teacherSelect1">教師查詢 1</label>
+        <select id="teacherSelect1"></select>
+      </div>
+      <div class="control">
+        <label for="teacherSelect2">教師查詢 2</label>
+        <select id="teacherSelect2"></select>
+      </div>
+    </section>
+
+    <div id="adminPanel" class="admin-panel" hidden>
+    <div class="admin-toolbar"><span>系統管理模式</span><div><button id="backToQuery" class="button secondary" type="button">回課表查詢</button><button id="logoutButton" class="button danger" type="button">登出</button></div></div>
+    <section class="settings-panel" aria-labelledby="settingsTitle">
+      <div class="settings-heading"><p class="eyebrow">DISPLAY SETTINGS</p><h2 id="settingsTitle">網頁與節次設定</h2></div>
+      <div class="title-setting"><label for="siteTitleInput">網頁標題</label><input id="siteTitleInput" type="text" maxlength="80" placeholder="例如：國民中學課表查詢系統"><label for="adminPasswordInput">管理密碼</label><input id="adminPasswordInput" type="password" minlength="1" maxlength="100" autocomplete="new-password" placeholder="預設為 123"></div>
+      <div id="periodTimeInputs" class="period-time-inputs" aria-label="各節上下課時間"></div>
+      <div class="settings-actions"><button id="saveSettings" class="button" type="button">儲存設定</button><label class="button file-button">匯入設定檔<input id="configImport" type="file" accept=".json,application/json"></label><button id="configExport" class="button secondary" type="button">匯出設定檔</button></div>
+    </section>
+
+    <section class="data-panel" aria-labelledby="dataTitle">
+      <div><p class="eyebrow">DATA MANAGEMENT</p><h2 id="dataTitle">資料管理</h2><p>資料只保存在此瀏覽器。匯入會取代對應資料，請先匯出備份；CSV 支援 UTF-8 與 Big5 編碼。範例檔位於 <code>data</code> 資料夾。</p></div>
+      <div class="data-actions">
+        <label class="button file-button">匯入教師 CSV<input id="teacherImport" type="file" accept=".csv,text/csv"></label>
+        <label class="button file-button">匯入課表 CSV<input id="timetableImport" type="file" accept=".csv,text/csv"></label>
+        <button id="teacherExport" class="button secondary" type="button">匯出教師 CSV</button>
+        <button id="timetableExport" class="button secondary" type="button">匯出課表 CSV</button>
+        <button id="resetData" class="button ghost" type="button">還原範例資料</button>
+        <button id="clearData" class="button danger" type="button">清除本機資料</button>
+      </div>
+      <details>
+        <summary>CSV 格式說明</summary>
+        <p><code>教師：教師id,職稱,姓名,領域</code>　例如：<code>T001,教師,王小明,國文</code></p>
+        <p><code>課表：流水號,班級編號,節次,科目代碼,科目名稱,教師id,教師姓名</code>　節次採雙碼制（11 = 星期一第 1 節；58 = 星期五第 8 節）。</p>
+      </details>
+    </section>
+    </div>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+
+    <section class="timetable-layout" aria-label="並排課表">
+      <article class="schedule-card class-card">
+        <div class="card-heading"><span class="card-tag">班級課表</span><h2 id="classTitle"></h2></div>
+        <div id="classSchedule" class="table-scroll"></div>
+      </article>
+      <article class="schedule-card teacher-card">
+        <div class="card-heading"><span class="card-tag">教師課表 1</span><h2 id="teacherTitle1"></h2></div>
+        <div id="teacherSchedule1" class="table-scroll"></div>
+      </article>
+      <article class="schedule-card teacher-card">
+        <div class="card-heading"><span class="card-tag">教師課表 2</span><h2 id="teacherTitle2"></h2></div>
+        <div id="teacherSchedule2" class="table-scroll"></div>
+      </article>
+    </section>
+
+  </main>
+  <footer>國民中學課表查詢系統 · 本機離線版</footer>
+  <dialog id="adminDialog" class="admin-dialog" aria-labelledby="adminDialogTitle">
+    <form id="adminLoginForm" method="dialog">
+      <h2 id="adminDialogTitle">系統管理驗證</h2>
+      <p>請輸入管理密碼後繼續。</p>
+      <label for="adminLoginPassword">管理密碼</label>
+      <input id="adminLoginPassword" type="password" required autocomplete="current-password">
+      <p id="adminLoginError" class="login-error" role="alert"></p>
+      <div class="dialog-actions"><button id="adminCancel" class="button secondary" type="button">取消</button><button class="button" type="submit">進入管理</button></div>
+    </form>
+  </dialog>
+  <script src="app.js"></script>
+</body>
 </html>
