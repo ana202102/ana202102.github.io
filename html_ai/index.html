@@ -77,8 +77,13 @@
 
         #mobile_controls button:active { background: #444; }
 
-        @media (min-width: 700px) {
+        /* 觸控裝置即使回報較大的 CSS 寬度，也必須顯示操作按鈕。 */
+        @media (hover: hover) and (pointer: fine) {
             #mobile_controls { display: none; }
+        }
+
+        @media (pointer: coarse) {
+            #mobile_controls { display: flex !important; }
         }
     </style>
 
