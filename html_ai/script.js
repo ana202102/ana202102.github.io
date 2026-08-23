@@ -196,8 +196,7 @@ function drawRect(x, y, w, h, color) {
     canvasCtx.fillRect(x, y, w, h);
 }
 
-window.addEventListener('keydown', (e) => {
-    const key = e.key.toLowerCase();
+function handleGameCommand(key) {
     if (key === 'escape') { resetGame(); return; }
     if (key === 'h') { showHelp = !showHelp; return; }
 
@@ -246,6 +245,10 @@ window.addEventListener('keydown', (e) => {
         link.download = `squat_${timeStr}.jpg`;
         link.href = finalCanvas.toDataURL('image/jpeg'); link.click();
     }
+}
+
+window.addEventListener('keydown', (e) => {
+    handleGameCommand(e.key.toLowerCase());
 });
 
 // 手機直接點擊畫布上的主選單圖形即可操作，不需要另外尋找按鈕。
@@ -278,7 +281,7 @@ canvasElement.addEventListener('pointerup', (event) => {
     else if (point.y >= 375 && point.y < 420) key = 'escape';
 
     if (key) {
-        window.dispatchEvent(new KeyboardEvent('keydown', { key }));
+        handleGameCommand(key);
         event.preventDefault();
     }
 });
@@ -286,7 +289,7 @@ canvasElement.addEventListener('pointerup', (event) => {
 // 手機沒有實體鍵盤，將觸控按鈕轉換成與鍵盤相同的操作。
 document.querySelectorAll('#mobile_controls button').forEach((button) => {
     button.addEventListener('click', () => {
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: button.dataset.key }));
+        handleGameCommand(button.dataset.key);
     });
 });
 
