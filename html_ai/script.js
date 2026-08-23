@@ -1,6 +1,7 @@
 const videoElement = document.getElementById('input_video');
 const canvasElement = document.getElementById('output_canvas');
 const canvasCtx = canvasElement.getContext('2d');
+const loadingMessage = document.getElementById('loading_message');
 
 // 遊戲狀態與參數
 let sport = { count: 0 };
@@ -41,6 +42,9 @@ function calcAngle(p1, p2, p3) {
 }
 
 function onResults(results) {
+    // 收到第一筆姿勢辨識結果，代表模型已完成初始化。
+    loadingMessage.classList.add('hidden');
+
     canvasElement.width = videoElement.videoWidth || 1280;
     canvasElement.height = videoElement.videoHeight || 720;
     
@@ -100,7 +104,7 @@ function processGameState() {
         const menuTextBoundary = menuX + menuW - 15; 
         drawRect(menuX, 120, menuW, 350, "rgba(0,0,0,0.7)");
         drawMirrorText("1 簡單 (5次)", menuTextBoundary, 160, "lime", null, 28, "right");
-        drawMirrorText("2 普通 (15+15s)", menuTextBoundary, 205, "white", null, 28, "right");
+        drawMirrorText("2 普通 (10+10s)", menuTextBoundary, 205, "white", null, 28, "right");
         drawMirrorText("3 困難 (自訂)", menuTextBoundary, 250, "white", null, 28, "right");
         drawMirrorText("H 操作說明", menuTextBoundary, 310, "#00BFFF", null, 25, "right");
         drawMirrorText("P 截圖分享", menuTextBoundary, 350, "#FFD700", null, 25, "right");
@@ -145,7 +149,7 @@ function drawHelpPanel() {
     drawRect(centerX - w/2, centerY - h/2, w, h, "rgba(0,0,0,0.95)");
     drawMirrorText("--- 遊戲操作說明 ---", panelRightBoundary, centerY - 170, "#00BFFF", null, 35, "right");
     drawMirrorText("難度 1：完成 5 次深蹲即可。", panelRightBoundary, centerY - 100, "white", null, 25, "right");
-    drawMirrorText("難度 2：15 次深蹲 + 15 秒支撐。", panelRightBoundary, centerY - 50, "white", null, 25, "right");
+    drawMirrorText("難度 2：10 次深蹲 + 10 秒支撐。", panelRightBoundary, centerY - 50, "white", null, 25, "right");
     drawMirrorText("難度 3：自訂挑戰與總限時機制。", panelRightBoundary, centerY, "white", null, 25, "right");
     drawMirrorText("[P 鍵] 截圖分享 (自動修正左右反轉)", panelRightBoundary, centerY + 70, "yellow", null, 25, "right");
     drawMirrorText("[ESC] 重置遊戲並返回主選單", panelRightBoundary, centerY + 120, "yellow", null, 25, "right");
@@ -188,7 +192,7 @@ window.addEventListener('keydown', (e) => {
 
     if (runFlag === 0) {
         if (key === '1') { gameMode = 'e'; firstGWinT = 5; runFlag = 1; sport.count = 0; }
-        if (key === '2') { gameMode = 's'; firstGWinT = 15; secondGWinT = 15; runFlag = 1; sport.count = 0; }
+        if (key === '2') { gameMode = 's'; firstGWinT = 10; secondGWinT = 10; runFlag = 1; sport.count = 0; }
         if (key === '3') {
             let res = prompt("自訂：深蹲次數,支撐秒數,限時總秒數", "15,15,60");
             if (res) {
@@ -233,8 +237,40 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
+// 手機沒有實體鍵盤，將觸控按鈕轉換成與鍵盤相同的操作。
+document.querySelectorAll('#mobile_controls button').forEach((button) => {
+    button.addEventListener('click', () => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: button.dataset.key }));
+    });
+});
+
 const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
 pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
 pose.onResults(onResults);
-const camera = new Camera(videoElement, { onFrame: async () => { await pose.send({image: videoElement}); }, width: 1280, height: 720 });
-camera.start();
+
+// 明確指定使用前鏡頭，並使用 getUserMedia 提升手機瀏覽器相容性。
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+                facingMode: { ideal: 'user' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        });
+        videoElement.srcObject = stream;
+        await videoElement.play();
+
+        const processFrame = async () => {
+            await pose.send({ image: videoElement });
+            requestAnimationFrame(processFrame);
+        };
+        processFrame();
+    } catch (error) {
+        loadingMessage.textContent = '無法啟用攝影機，請允許權限並使用 HTTPS';
+        console.error('Camera initialization failed:', error);
+    }
+}
+
+startCamera();

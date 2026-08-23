@@ -2,6 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>AI 深蹲挑戰助手 (鏡射版)</title>
     <style>
         body { margin: 0; background: #000; color: white; font-family: "Microsoft JhengHei", sans-serif; overflow: hidden; }
@@ -21,7 +22,65 @@
     <div id="container">
         <video id="input_video" style="display:none" playsinline></video>
         <canvas id="output_canvas"></canvas>
+        <div id="loading_message">模型下載中</div>
     </div>
+
+    <div id="mobile_controls" aria-label="手機操作按鈕">
+        <button type="button" data-key="1">簡單</button>
+        <button type="button" data-key="2">普通</button>
+        <button type="button" data-key="3">自訂</button>
+        <button type="button" data-key="h">說明</button>
+        <button type="button" data-key="p">截圖</button>
+        <button type="button" data-key="escape">重置</button>
+    </div>
+
+    <style>
+        #loading_message {
+            position: relative;
+            z-index: 2;
+            padding: 18px 30px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #FFD700;
+            font-size: 32px;
+            font-weight: bold;
+            border: 2px solid #FFD700;
+        }
+
+        #loading_message.hidden {
+            display: none;
+        }
+
+        #mobile_controls {
+            position: fixed;
+            z-index: 3;
+            left: 0;
+            right: 0;
+            bottom: max(12px, env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+        }
+
+        #mobile_controls button {
+            min-width: 72px;
+            min-height: 44px;
+            padding: 8px 12px;
+            border: 1px solid white;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            font: bold 16px "Microsoft JhengHei", sans-serif;
+            touch-action: manipulation;
+        }
+
+        #mobile_controls button:active { background: #444; }
+
+        @media (min-width: 700px) {
+            #mobile_controls { display: none; }
+        }
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
