@@ -237,6 +237,41 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
+// 手機直接點擊畫布上的主選單圖形即可操作，不需要另外尋找按鈕。
+function getCanvasPoint(event) {
+    const rect = canvasElement.getBoundingClientRect();
+    const scale = Math.min(rect.width / canvasElement.width, rect.height / canvasElement.height);
+    const renderedWidth = canvasElement.width * scale;
+    const renderedHeight = canvasElement.height * scale;
+    const offsetX = (rect.width - renderedWidth) / 2;
+    const offsetY = (rect.height - renderedHeight) / 2;
+    const displayedX = (event.clientX - rect.left - offsetX) / scale;
+    const displayedY = (event.clientY - rect.top - offsetY) / scale;
+
+    // 畫布以 scaleX(-1) 鏡射，因此要還原觸控點的畫布座標。
+    return { x: canvasElement.width - displayedX, y: displayedY };
+}
+
+canvasElement.addEventListener('pointerup', (event) => {
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+
+    const point = getCanvasPoint(event);
+    if (point.x < 0 || point.x > 280) return;
+
+    let key = '';
+    if (point.y >= 130 && point.y < 180) key = '1';
+    else if (point.y >= 180 && point.y < 225) key = '2';
+    else if (point.y >= 225 && point.y < 275) key = '3';
+    else if (point.y >= 285 && point.y < 330) key = 'h';
+    else if (point.y >= 330 && point.y < 375) key = 'p';
+    else if (point.y >= 375 && point.y < 420) key = 'escape';
+
+    if (key) {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key }));
+        event.preventDefault();
+    }
+});
+
 // 手機沒有實體鍵盤，將觸控按鈕轉換成與鍵盤相同的操作。
 document.querySelectorAll('#mobile_controls button').forEach((button) => {
     button.addEventListener('click', () => {
