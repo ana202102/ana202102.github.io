@@ -100,12 +100,14 @@ function onResults(results) {
 
 function drawActionMenu() {
     const menuX = 5;
-    const menuW = 250;
+    const menuW = 340;
     const menuTextBoundary = menuX + menuW - 15;
-    drawRect(menuX, 285, menuW, 150, "rgba(0,0,0,0.7)");
-    drawMirrorText("H 操作說明", menuTextBoundary, 320, "#00BFFF", null, 25, "right");
-    drawMirrorText("P 截圖分享", menuTextBoundary, 365, "#FFD700", null, 25, "right");
-    drawMirrorText("ESC 重置遊戲", menuTextBoundary, 410, "#FFD700", null, 25, "right");
+    drawRect(menuX, 270, menuW, 58, "rgba(0,80,120,0.85)");
+    drawRect(menuX, 340, menuW, 58, "rgba(100,80,0,0.85)");
+    drawRect(menuX, 410, menuW, 58, "rgba(120,40,0,0.85)");
+    drawMirrorText("H 操作說明", menuTextBoundary, 310, "white", null, 32, "right");
+    drawMirrorText("P 截圖分享", menuTextBoundary, 380, "white", null, 32, "right");
+    drawMirrorText("ESC 重置遊戲", menuTextBoundary, 450, "white", null, 32, "right");
 }
 
 function processGameState() {
@@ -270,15 +272,21 @@ canvasElement.addEventListener('pointerup', (event) => {
     if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
 
     const point = getCanvasPoint(event);
-    if (point.x < 0 || point.x > 280) return;
+    if (point.x < 0 || point.x > 360) return;
 
     let key = '';
-    if (point.y >= 130 && point.y < 180) key = '1';
-    else if (point.y >= 180 && point.y < 225) key = '2';
-    else if (point.y >= 225 && point.y < 275) key = '3';
-    else if (point.y >= 285 && point.y < 330) key = 'h';
-    else if (point.y >= 330 && point.y < 375) key = 'p';
-    else if (point.y >= 375 && point.y < 420) key = 'escape';
+    if (runFlag === 0) {
+        if (point.y >= 130 && point.y < 180) key = '1';
+        else if (point.y >= 180 && point.y < 225) key = '2';
+        else if (point.y >= 225 && point.y < 275) key = '3';
+        else if (point.y >= 285 && point.y < 330) key = 'h';
+        else if (point.y >= 330 && point.y < 375) key = 'p';
+        else if (point.y >= 375 && point.y < 420) key = 'escape';
+    } else {
+        if (point.y >= 270 && point.y < 328) key = 'h';
+        else if (point.y >= 340 && point.y < 398) key = 'p';
+        else if (point.y >= 410 && point.y < 468) key = 'escape';
+    }
 
     if (key) {
         handleGameCommand(key);
