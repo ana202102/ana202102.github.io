@@ -94,7 +94,18 @@ function onResults(results) {
 
     processGameState();
     if (showHelp) drawHelpPanel(); 
+    if (runFlag !== 0 && window.matchMedia('(pointer: coarse)').matches) drawActionMenu();
     canvasCtx.restore();
+}
+
+function drawActionMenu() {
+    const menuX = 5;
+    const menuW = 250;
+    const menuTextBoundary = menuX + menuW - 15;
+    drawRect(menuX, 285, menuW, 150, "rgba(0,0,0,0.7)");
+    drawMirrorText("H 操作說明", menuTextBoundary, 320, "#00BFFF", null, 25, "right");
+    drawMirrorText("P 截圖分享", menuTextBoundary, 365, "#FFD700", null, 25, "right");
+    drawMirrorText("ESC 重置遊戲", menuTextBoundary, 410, "#FFD700", null, 25, "right");
 }
 
 function processGameState() {
