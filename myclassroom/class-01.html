@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">班級常規點名系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style id="system-dynamic-styles">
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        :root {
+            /* 使用 rem，讓瀏覽器的預設字型大小可以自然影響整個介面。 */
+            --base-font-size: 18px;
+            --unified-title-size: calc(var(--base-font-size) * 1.5);
+            --sub-title-size: calc(var(--base-font-size) * 0.85);
+            --primary: #6366f1;
+            --primary-soft: #eef2ff;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html { font-size: 112.5%; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+            background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
+            font-size: var(--base-font-size);
+            color: #0f172a;
+            letter-spacing: -0.01em;
+            overflow-x: hidden;
+        }
+
+        /* 版面以內容寬度自動調整，避免字型放大後被固定欄寬擠壓。 */
+        nav { padding-inline: clamp(0.75rem, 3vw, 1rem); }
+        nav > div {
+            width: 100%;
+            min-width: 0;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        nav > div > div { min-width: 0; }
+        nav > div > div:first-child { flex: 1 1 auto; }
+        nav > div > div:last-child {
+            max-width: 100%;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        nav > div > div:last-child::-webkit-scrollbar { display: none; }
+        .nav-btn {
+            flex: 0 1 auto;
+            min-width: clamp(2.75rem, 10vw, 5.5rem);
+            padding-inline: clamp(0.65rem, 2vw, 1rem);
+        }
+        main, section, .glass-card { min-width: 0; }
+        .view-header { gap: 1rem; min-height: clamp(5rem, 10vw, 6rem); }
+        .view-header > * { min-width: 0; }
+        .view-header h2 { overflow-wrap: anywhere; }
+        .view-header.flex-row { flex-wrap: wrap; }
+        .view-header input, .view-header button { max-width: 100%; }
+
+        /* 卡片數量依可用空間自動決定，不依賴固定的 md／lg 斷點。 */
+        #browse-content {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+        }
+        #view-register > .grid {
+            grid-template-columns: 1fr;
+        }
+        #view-register > .grid > * {
+            grid-column: auto !important;
+            min-width: 0;
+        }
+        #view-register .sticky { position: static; }
+        #student-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+        }
+        #view-settings > .grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+        }
+        #view-settings > .grid > * { min-width: 0; }
+        #register-category-selector { min-width: 0; }
+        #register-category-selector button { max-width: 100%; overflow-wrap: anywhere; }
+        #recent-records, #student-list, #modal-content { min-width: 0; }
+
+        @media (min-width: 68rem) {
+            #view-register > .grid {
+                grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+            }
+            #view-register .sticky { position: sticky; }
+        }
+
+        @media (max-width: 40rem) {
+            .view-header.flex-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .view-header.flex-row > div:last-child,
+            .view-header.flex-row input,
+            .view-header.flex-row button { width: 100%; }
+            #view-register .glass-card,
+            #view-settings .glass-card { padding: clamp(1rem, 4vw, 1.5rem); }
+            #view-register .flex.items-center.justify-between,
+            #view-settings .flex.items-center.justify-between { flex-wrap: wrap; gap: 0.75rem; }
+        }
+
+        #header-system-name {
+            font-size: var(--unified-title-size);
+            font-weight: 900;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .view-header h2 {
+            font-size: var(--unified-title-size);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .view-header p {
+            font-size: var(--sub-title-size);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.75rem;
+        }
+        
+        .nav-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .view-header {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 2rem;
+            min-height: clamp(5rem, 10vw, 6rem);
+            justify-content: center;
+        }
+
+        .student-card {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid #f1f5f9;
+        }
+        .student-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+            border-color: var(--primary-soft);
+        }
+
+        .btn-active-blue { background: #3b82f6 !important; color: white !important; }
+        .btn-active-red { background: #ef4444 !important; color: white !important; }
+        .btn-active-green { background: #22c55e !important; color: white !important; }
+        .btn-active-orange { background: #f97316 !important; color: white !important; }
+        .btn-active-purple { background: #a855f7 !important; color: white !important; }
+
+        .bg-blue-400 { background-color: #60a5fa; }
+        .bg-red-400 { background-color: #f87171; }
+        .bg-green-400 { background-color: #4ade80; }
+        .bg-orange-400 { background-color: #fb923c; }
+        .bg-purple-400 { background-color: #c084fc; }
+
+        .text-blue-500 { color: #3b82f6; }
+        .text-red-500 { color: #ef4444; }
+        .text-green-500 { color: #22c55e; }
+        .text-orange-500 { color: #f97316; }
+        .text-purple-500 { color: #a855f7; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .view-content {
+            padding-top: 1rem;
+        }
+
+        .nav-icon-box {
+            width: 2.5rem;
+            height: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        /* 危險區域樣式 */
+        .danger-zone {
+            border: 2px dashed #fee2e2;
+            background: #fffafa;
+        }
+
+        .icon-button { min-width: 2.25rem; min-height: 2.25rem; }
+        .record-delete { opacity: 0.7; }
+        .record-delete:hover, .record-delete:focus-visible { opacity: 1; }
+        .empty-state { border: 1px dashed #cbd5e1; background: rgba(248, 250, 252, 0.72); }
+
+        body {
+            --page-background: radial-gradient(circle at top right, #eef6ff, #f4f8fb);
+            --panel-background: rgba(255, 255, 255, 0.86);
+            --panel-border: rgba(255, 255, 255, 0.7);
+            --surface-solid: #ffffff;
+            --text-main: #0f172a;
+            background: var(--page-background);
+            color: var(--text-main);
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+        body[data-theme="sky"] { --primary: #2563eb; --primary-soft: #dbeafe; --page-background: radial-gradient(circle at top right, #e8f4ff, #f5f9fd); }
+        body[data-theme="forest"] { --primary: #059669; --primary-soft: #d1fae5; --page-background: radial-gradient(circle at top right, #e8fff5, #f4faf8); }
+        body[data-theme="lavender"] { --primary: #7c3aed; --primary-soft: #ede9fe; --page-background: radial-gradient(circle at top right, #f2edff, #faf8ff); }
+        body[data-theme="sunset"] { --primary: #ea580c; --primary-soft: #ffedd5; --page-background: radial-gradient(circle at top right, #fff1e7, #fffaf7); }
+        body[data-theme] .appearance-trigger { background: var(--primary); }
+        body[data-theme] .glass-card { background: var(--panel-background); border-color: var(--panel-border); }
+        body[data-theme] .nav-btn.active { color: var(--primary); background: var(--surface-solid); }
+        body[data-theme] .bg-indigo-600,
+        body[data-theme] .btn-active-blue,
+        body[data-theme] .btn-active-red,
+        body[data-theme] .btn-active-green,
+        body[data-theme] .btn-active-orange,
+        body[data-theme] .btn-active-purple { background-color: var(--primary) !important; }
+        body[data-theme] .text-indigo-500,
+        body[data-theme] .text-indigo-600,
+        body[data-theme] .text-indigo-700 { color: var(--primary) !important; }
+        body[data-theme] .bg-indigo-50 { background-color: var(--primary-soft) !important; }
+        body[data-theme] .border-indigo-100 { border-color: var(--primary-soft) !important; }
+
+        .appearance-panel {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.65);
+        }
+        .appearance-control {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #0f172a;
+        }
+        .appearance-trigger { transition: filter 0.2s ease, transform 0.2s ease; }
+        .appearance-trigger:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .auth-status-button { background: var(--surface-solid); color: var(--primary); border: 1px solid var(--primary-soft); transition: background 0.2s ease, transform 0.2s ease; }
+        .auth-status-button:hover { background: var(--primary-soft); transform: translateY(-1px); }
+        .appearance-reset:hover { background: rgba(148, 163, 184, 0.12); }
+        .action-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 1.5rem;
+            z-index: 130;
+            transform: translate(-50%, 1rem);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .action-toast.show { opacity: 1; transform: translate(-50%, 0); }
+        body.compact-mode .view-header { min-height: 4rem; margin-bottom: 1rem; }
+        body.compact-mode .student-card { padding: 0.75rem; }
+        body.compact-mode #view-register > .grid { gap: 1rem; }
+        body.dark-mode {
+            --page-background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            --panel-background: rgba(30, 41, 59, 0.9);
+            --panel-border: rgba(71, 85, 105, 0.7);
+            --surface-solid: #1e293b;
+            --text-main: #e2e8f0;
+        }
+        body.dark-mode .appearance-panel { background: #1e293b; color: #f8fafc; border-color: #475569; }
+        body.dark-mode .appearance-control { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+        body.dark-mode [class*="bg-white"],
+        body.dark-mode [class*="bg-slate-50"],
+        body.dark-mode [class*="bg-slate-100"] { background-color: #1e293b !important; }
+        body.dark-mode [class*="text-slate-900"],
+        body.dark-mode [class*="text-slate-800"],
+        body.dark-mode [class*="text-slate-700"],
+        body.dark-mode [class*="text-slate-600"] { color: #e2e8f0 !important; }
+        body.dark-mode [class*="text-slate-500"],
+        body.dark-mode [class*="text-slate-400"] { color: #94a3b8 !important; }
+        body.dark-mode [class*="border-slate"] { border-color: #334155 !important; }
+        body.dark-mode .student-card { border-color: #334155; }
+        body.dark-mode .danger-zone { background: rgba(127, 29, 29, 0.18); border-color: #7f1d1d; }
+
+        /* 統計表文字放大，提升座號、類別與數字的辨識度。 */
+        #stats-header-row th {
+            font-size: 0.9rem !important;
+            line-height: 1.35;
+        }
+        #stats-table-body td {
+            font-size: 0.95rem;
+        }
+        #stats-table-body td:first-child,
+        #stats-table-body td button {
+            font-size: 0.9rem !important;
+        }
+        #stats-table-body td:nth-last-child(2) {
+            font-size: 1.05rem;
+        }
+        #student-grid > .student-card > span {
+            font-size: 0.9rem !important;
+            line-height: 1.25;
+        }
+
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <nav class="sticky top-0 z-50 px-4 py-4">
+        <div class="max-w-5xl mx-auto glass-card rounded-2xl p-1.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pl-3">
+                <div class="nav-icon-box bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fas fa-check-double text-base"></i>
+                </div>
+                <h1 id="header-system-name" class="text-slate-800 tracking-tight hidden sm:flex">
+                    常規點名
+                </h1>
+            </div>
+
+            <div class="flex gap-1 bg-slate-100/60 p-1 rounded-xl">
+                <button onclick="switchView('browse')" id="nav-browse" class="nav-btn px-4 rounded-lg text-sm font-bold text-slate-500">
+                    <i class="fas fa-layer-group sm:mr-2"></i> <span class="hidden sm:inline">看板</span>
+                </button>
+                <button onclick="switchView('register')" id="nav-register" class="nav-btn px-4 rounded-lg text-sm font-bold text-slate-500">
+                    <i class="fas fa-edit sm:mr-2"></i> <span class="hidden sm:inline">登記</span>
+                </button>
+                <button onclick="switchView('stats')" id="nav-stats" class="nav-btn px-4 rounded-lg text-sm font-bold text-slate-500">
+                    <i class="fas fa-chart-line sm:mr-2"></i> <span class="hidden sm:inline">統計</span>
+                </button>
+                <button onclick="switchView('settings')" id="nav-settings" class="nav-btn px-4 rounded-lg text-sm font-bold text-slate-500">
+                    <i class="fas fa-cog sm:mr-2"></i> <span class="hidden sm:inline">設定</span>
+                </button>
+            </div>
+            <button onclick="openAppearanceModal()" class="appearance-trigger flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-black text-white" aria-label="開啟自訂外觀">
+                <i class="fas fa-palette"></i><span class="hidden sm:inline">自訂外觀</span>
+            </button>
+            <button onclick="handleAuthButton()" id="auth-status-button" class="auth-status-button flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-black" aria-label="管理員登入">
+                <i id="auth-status-icon" class="fas fa-lock"></i><span id="auth-status-text" class="hidden sm:inline">登入</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-4 pb-24">
+        
+        <!-- 看板視圖 -->
+        <section id="view-browse" class="view-content animate-in fade-in duration-300">
+            <div class="view-header flex flex-row items-center justify-between">
+                <div>
+                    <h2 class="text-slate-900 tracking-tight flex items-center gap-4">
+                        <i class="fas fa-layer-group text-indigo-500 text-center"></i> 今日狀況
+                    </h2>
+                    <p class="text-slate-400 font-medium mt-1">即時檢視各類別登記名單</p>
+                </div>
+                <input type="date" id="browse-date" class="px-4 py-2 glass-card rounded-xl font-bold text-slate-600 text-sm outline-none" onchange="renderBrowseView()">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="browse-content"></div>
+            
+            <div id="browse-empty" class="hidden py-32 text-center glass-card rounded-[2.5rem]">
+                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-200">
+                    <i class="fas fa-inbox text-2xl"></i>
+                </div>
+                <h3 class="text-slate-500 font-bold text-lg">目前沒有記錄</h3>
+                <p class="text-slate-400 text-xs font-medium mt-2">切換日期或前往「登記」新增資料</p>
+            </div>
+        </section>
+
+        <!-- 登記視圖 -->
+        <section id="view-register" class="view-content hidden space-y-8 animate-in fade-in duration-300">
+            <div class="view-header">
+                <h2 class="text-slate-900 tracking-tight flex items-center gap-4">
+                    <i class="fas fa-edit text-indigo-500 text-center"></i> 資料登記
+                </h2>
+                <p class="text-slate-400 font-medium mt-1">選擇類別並點擊學生進行登錄</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="glass-card rounded-3xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-sm font-black text-slate-400 uppercase tracking-widest">1. 選擇登記類別</span>
+                            <input type="date" id="register-date" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg" onchange="renderStudentGrid()">
+                        </div>
+                        <div id="register-category-selector" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div class="glass-card rounded-3xl p-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                            <span class="text-base font-black text-slate-400 uppercase tracking-widest">2. 點擊學生姓名登記</span>
+                            <div class="relative w-full sm:w-auto">
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+                                <input type="text" id="student-search" placeholder="搜尋..." 
+                                    class="pl-10 pr-4 py-2 bg-slate-100 rounded-xl outline-none text-xs w-full sm:w-40 focus:bg-white transition" 
+                                    oninput="renderStudentGrid()">
+                            </div>
+                        </div>
+                        <div id="student-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4">
+                    <div class="glass-card rounded-3xl overflow-hidden sticky top-28">
+                        <div class="p-5 border-b border-slate-100 bg-white/50">
+                            <span class="font-extrabold text-slate-800 text-xs flex items-center gap-2">
+                                <i class="fas fa-history text-indigo-500"></i> 最近記錄
+                            </span>
+                        </div>
+                        <div id="recent-records" class="divide-y divide-slate-50 max-h-[50vh] overflow-y-auto no-scrollbar p-1"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 統計視圖 -->
+        <section id="view-stats" class="view-content hidden animate-in fade-in duration-300">
+            <div class="view-header flex flex-row items-center justify-between">
+                <div>
+                    <h2 class="text-slate-900 tracking-tight flex items-center gap-4">
+                        <i class="fas fa-chart-line text-indigo-500 text-center"></i> 統計報表
+                    </h2>
+                    <p class="text-slate-400 font-medium mt-1">分析與匯出期間數據</p>
+                </div>
+                <div class="flex items-center gap-2">
+                     <button onclick="exportRecordsToCSV()" class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-indigo-100 transition">
+                        <i class="fas fa-file-export"></i> 記錄 CSV
+                    </button>
+                     <button onclick="exportToCSV()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-black transition">
+                        <i class="fas fa-download"></i> 統計 CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-3xl overflow-hidden">
+                <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-center">
+                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+                        <input type="date" id="stats-start-date" class="bg-transparent border-none outline-none text-[0.625rem] font-bold text-slate-600" onchange="renderStats()">
+                        <i class="fas fa-arrow-right text-[0.5rem] text-slate-300"></i>
+                        <input type="date" id="stats-end-date" class="bg-transparent border-none outline-none text-[0.625rem] font-bold text-slate-600" onchange="renderStats()">
+                    </div>
+                </div>
+                <div class="overflow-x-auto no-scrollbar">
+                    <table class="w-full text-left border-collapse min-w-[37.5rem]">
+                        <thead>
+                            <tr id="stats-header-row" class="bg-slate-50/30 text-[0.625rem] font-black text-slate-400 px-6 uppercase tracking-widest border-b border-slate-50"></tr>
+                        </thead>
+                        <tbody id="stats-table-body" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+                <div id="stats-empty" class="hidden p-12 text-center empty-state m-4 rounded-2xl">
+                    <i class="fas fa-chart-simple text-2xl text-slate-300"></i>
+                    <p class="text-slate-500 font-bold mt-3">目前沒有可統計的資料</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 設定視圖 -->
+        <section id="view-settings" class="view-content hidden animate-in fade-in duration-300">
+            <div class="view-header">
+                <h2 class="text-slate-900 tracking-tight flex items-center gap-4">
+                    <i class="fas fa-cog text-indigo-500 text-center"></i> 系統設定
+                </h2>
+                <p class="text-slate-400 font-medium mt-1">管理清單、類別與介面呈現</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div class="glass-card rounded-3xl p-6">
+                        <h3 class="text-lg font-extrabold text-slate-800 mb-6 flex items-center gap-2">
+                            <i class="fas fa-sliders-h text-indigo-500 text-sm"></i> 介面偏好
+                        </h3>
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-[0.625rem] font-black text-slate-400 mb-2 uppercase">系統名稱</label>
+                                <input type="text" id="config-system-name" oninput="updateSystemName(this.value)" class="w-full px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-slate-700 text-sm" placeholder="班級常規點名">
+                            </div>
+                            <div>
+                                <button onclick="openAppearanceModal()" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition">
+                                    <span class="text-sm font-black"><i class="fas fa-palette mr-2"></i>開啟自訂外觀</span>
+                                    <i class="fas fa-chevron-right text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-3xl p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                                <i class="fas fa-user-shield text-indigo-500 text-sm"></i> 管理帳號
+                            </h3>
+                            <span id="admin-account-status" class="text-[0.625rem] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-md">尚未設定</span>
+                        </div>
+                        <p class="text-xs text-slate-400 font-medium mb-5">設定後，登記、刪除、CSV 匯入／匯出與資料管理都需要登入。</p>
+                        <div class="space-y-3">
+                            <label class="block">
+                                <span class="block text-sm font-black text-slate-500 mb-1.5">管理帳號</span>
+                                <input type="text" id="admin-username" autocomplete="username" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-slate-700 text-sm" placeholder="例如：teacher">
+                            </label>
+                            <label class="block">
+                                <span class="block text-sm font-black text-slate-500 mb-1.5">管理密碼</span>
+                                <input type="password" id="admin-password" autocomplete="new-password" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-slate-700 text-sm" placeholder="至少 4 個字元">
+                            </label>
+                            <label class="block">
+                                <span class="block text-sm font-black text-slate-500 mb-1.5">再次輸入密碼</span>
+                                <input type="password" id="admin-password-confirm" autocomplete="new-password" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-slate-700 text-sm" placeholder="再次輸入管理密碼">
+                            </label>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="saveAdminCredentials()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-black hover:bg-indigo-700 transition">儲存管理帳號</button>
+                                <button onclick="logoutAdmin()" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-500 text-sm font-black hover:bg-slate-200 transition">登出</button>
+                            </div>
+                            <p id="admin-account-message" class="text-xs font-bold text-slate-400"></p>
+                        </div>
+                    </div>
+
+                    <!-- 快速刪除區 (新功能) -->
+                    <div class="glass-card rounded-3xl p-6 danger-zone">
+                        <h3 class="text-lg font-extrabold text-rose-600 mb-6 flex items-center gap-2">
+                            <i class="fas fa-exclamation-triangle text-sm"></i> 危險區域
+                        </h3>
+                        <p class="text-[0.625rem] font-bold text-rose-400 mb-4 uppercase tracking-wider">這項操作無法復原，請謹慎執行</p>
+                        <div class="grid grid-cols-1 gap-3">
+                            <button onclick="clearAllRecords()" class="flex items-center justify-between px-4 py-3 bg-white border border-rose-100 rounded-2xl text-rose-600 hover:bg-rose-600 hover:text-white transition group">
+                                <span class="text-xs font-black">僅清除所有點名記錄</span>
+                                <i class="fas fa-eraser text-[0.625rem] opacity-40 group-hover:opacity-100"></i>
+                            </button>
+                            <button onclick="factoryReset()" class="flex items-center justify-between px-4 py-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 hover:bg-rose-700 hover:text-white transition group">
+                                <span class="text-xs font-black">完全重設 (清空名單與設定)</span>
+                                <i class="fas fa-trash-alt text-[0.625rem] opacity-40 group-hover:opacity-100"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-3xl p-6">
+                        <h3 class="text-lg font-extrabold text-slate-800 mb-6 flex items-center gap-2">
+                            <i class="fas fa-tags text-indigo-500 text-sm"></i> 登記項目
+                        </h3>
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="new-category" placeholder="新增類別..." class="flex-1 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl outline-none text-xs font-bold">
+                            <button onclick="addCategory()" class="bg-indigo-600 text-white px-4 rounded-xl hover:bg-indigo-700 transition">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="category-tags" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-3xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                            <i class="fas fa-users text-indigo-500 text-sm"></i> 學生管理
+                        </h3>
+                        <span id="student-count" class="text-[0.625rem] font-black bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md"></span>
+                    </div>
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="importStudents()" class="flex-1 bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs">批次匯入</button>
+                        <button onclick="resetToDefaultStudents()" class="px-4 py-2.5 bg-slate-100 text-slate-500 rounded-xl text-[0.625rem] font-black uppercase">重置名單</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                        <button onclick="exportRecordsToCSV()" class="py-2.5 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-xs hover:bg-indigo-100 transition"><i class="fas fa-file-export mr-1"></i>匯出記錄 CSV</button>
+                        <button onclick="document.getElementById('records-file').click()" class="py-2.5 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs hover:bg-emerald-100 transition"><i class="fas fa-file-import mr-1"></i>匯入記錄 CSV</button>
+                    </div>
+                    <input id="records-file" type="file" accept=".csv,text/csv" class="hidden" onchange="importRecordsFromCSV(event)">
+                    <p id="records-import-status" class="text-[0.625rem] text-slate-400 font-medium mb-4">CSV 內容需包含：日期、時間、座號、姓名、類別。</p>
+                    <textarea id="import-text" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl h-32 text-[0.625rem] font-mono mb-4 outline-none" placeholder="格式：座號,姓名 (一行一個)"></textarea>
+                    <div id="student-list" class="max-h-[18.75rem] overflow-y-auto rounded-xl border border-slate-50 bg-slate-50/20"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 詳情 Modal -->
+    <div id="detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative z-10 overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="p-6 border-b border-slate-50 flex justify-between items-center">
+                <div>
+                    <h4 id="modal-title-name" class="text-xl font-black text-slate-900"></h4>
+                    <span id="modal-title-cat" class="text-[0.625rem] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded uppercase mt-1 inline-block"></span>
+                </div>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="p-4 max-h-[40vh] overflow-y-auto space-y-2 no-scrollbar"></div>
+        </div>
+    </div>
+
+    <!-- 自訂外觀 Modal -->
+    <div id="appearance-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeAppearanceModal()"></div>
+        <div class="appearance-panel relative z-10 w-full max-w-md rounded-3xl p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black">自訂外觀</h3>
+                <button onclick="closeAppearanceModal()" class="icon-button rounded-xl border border-current/20 flex items-center justify-center" aria-label="關閉自訂外觀"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-5">
+                <label class="block">
+                    <span class="appearance-label block text-sm font-black mb-2">網站主題</span>
+                    <select id="appearance-theme" onchange="updateTheme(this.value)" class="appearance-control w-full rounded-xl px-4 py-3 text-base font-bold outline-none">
+                        <option value="sky">晴空藍</option>
+                        <option value="forest">森林綠</option>
+                        <option value="lavender">薰衣草紫</option>
+                        <option value="sunset">夕陽橙</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="appearance-label block text-sm font-black mb-2">顯示模式</span>
+                    <select id="appearance-mode" onchange="updateDisplayMode(this.value)" class="appearance-control w-full rounded-xl px-4 py-3 text-base font-bold outline-none">
+                        <option value="light">淺色模式</option>
+                        <option value="dark">深色模式</option>
+                        <option value="system">跟隨系統</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="flex items-center justify-between appearance-label text-sm font-black mb-2"><span>文字大小</span><output id="appearance-font-value" class="text-lg font-black">100%</output></span>
+                    <input type="range" min="16" max="24" step="1" id="appearance-font-size" oninput="updateFontSize(this.value)" class="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer appearance-label text-sm font-black">
+                    <input id="appearance-compact" type="checkbox" onchange="updateCompactMode(this.checked)" class="w-5 h-5 accent-indigo-600">
+                    使用緊湊版面
+                </label>
+            </div>
+            <button onclick="resetAppearance()" class="appearance-reset w-full mt-6 py-3 rounded-xl border border-current/20 text-base font-black transition">恢復預設</button>
+        </div>
+    </div>
+
+    <!-- 管理員登入 Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeAuthModal()"></div>
+        <div class="appearance-panel relative z-10 w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-black">管理員登入</h3>
+                <button onclick="closeAuthModal()" class="icon-button rounded-xl border border-current/20 flex items-center justify-center" aria-label="關閉登入視窗"><i class="fas fa-times"></i></button>
+            </div>
+            <p id="auth-modal-message" class="text-sm text-slate-400 font-medium mb-5">請輸入管理帳號與密碼。</p>
+            <div class="space-y-3">
+                <label class="block">
+                    <span class="block text-sm font-black mb-1.5">管理帳號</span>
+                    <input type="text" id="auth-login-username" autocomplete="username" class="appearance-control w-full rounded-xl px-4 py-3 text-base font-bold outline-none" placeholder="管理帳號">
+                </label>
+                <label class="block">
+                    <span class="block text-sm font-black mb-1.5">管理密碼</span>
+                    <input type="password" id="auth-login-password" autocomplete="current-password" onkeydown="if(event.key === 'Enter') submitLogin()" class="appearance-control w-full rounded-xl px-4 py-3 text-base font-bold outline-none" placeholder="管理密碼">
+                </label>
+                <p id="auth-login-error" class="text-xs text-rose-500 font-bold min-h-4"></p>
+                <button onclick="submitLogin()" class="w-full py-3 rounded-xl bg-indigo-600 text-white text-base font-black hover:bg-indigo-700 transition">登入</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="action-toast" class="action-toast rounded-2xl bg-slate-900 text-white px-5 py-3 shadow-2xl text-sm font-black" role="status" aria-live="polite"></div>
+
+    <script>
+        const COLORS = ['blue', 'red', 'green', 'orange', 'purple'];
+        const DEFAULT_CATEGORIES = ['作業', '秩序', '午餐', '打掃', '值日生'];
+        const DEFAULT_STUDENTS_RAW = `1,黃元隆\n2,張桓毓\n3,馮楷峰\n4,謝昂哲\n5,謝易宸\n6,陳柏丞\n7,巫濬喆\n8,唐紹恩\n9,黃鉉\n10,楊翊楷\n11,李士中\n12,許正澔\n13,黃皓\n14,陳翰靖\n15,陳淯哲\n16,楊淯晴\n17,李昀恩\n18,黃靖媛\n19,呂奕儒\n20,呂泱瑾\n21,黃渟盷\n22,廖研甯\n23,林岑蔚\n24,蔡婷涵\n25,田喬羽\n26,林宥希\n27,陳芮琪\n28,盧宣橞\n29,黃思靜\n30,朱維寧`;
+
+        const parseStudents = (raw) => raw.split('\n').filter(l => l.trim()).map(l => {
+            const [sn, name] = l.split(',');
+            return { id: 's_' + Math.random().toString(36).substr(2, 9), seatNo: sn.trim().padStart(2, '0'), name: name.trim() };
+        }).sort((a,b) => a.seatNo.localeCompare(b.seatNo, undefined, {numeric: true}));
+
+        const DEFAULT_ADMIN_USERNAME = 'abc';
+        const DEFAULT_ADMIN_PASSWORD_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+        let students = JSON.parse(localStorage.getItem('cls_stus_v4')) || parseStudents(DEFAULT_STUDENTS_RAW);
+        let records = JSON.parse(localStorage.getItem('cls_recs_v4')) || [];
+        let categories = JSON.parse(localStorage.getItem('cls_cats_v4')) || DEFAULT_CATEGORIES;
+        let config = JSON.parse(localStorage.getItem('cls_conf_v4')) || {
+            systemName: '常規點名',
+            fontSize: 18,
+            auth: { enabled: true, username: DEFAULT_ADMIN_USERNAME, passwordHash: DEFAULT_ADMIN_PASSWORD_HASH }
+        };
+        config.fontSize = Math.max(16, Math.min(24, Number(config.fontSize) || 18));
+        config.theme = ['sky', 'forest', 'lavender', 'sunset'].includes(config.theme) ? config.theme : 'sky';
+        config.displayMode = ['light', 'dark', 'system'].includes(config.displayMode) ? config.displayMode : 'light';
+        config.compact = Boolean(config.compact);
+        if (!config.auth || typeof config.auth !== 'object' || !config.auth.enabled || !config.auth.username || !config.auth.passwordHash) {
+            config.auth = { enabled: true, username: DEFAULT_ADMIN_USERNAME, passwordHash: DEFAULT_ADMIN_PASSWORD_HASH };
+        }
+        config.auth.enabled = Boolean(config.auth.enabled && config.auth.username && config.auth.passwordHash);
+        let selectedCategory = categories[0];
+        let statsSort = { key: 'seatNo', asc: true };
+        let isAuthenticated = false;
+        let pendingAdminAction = null;
+
+        const save = () => {
+            localStorage.setItem('cls_stus_v4', JSON.stringify(students));
+            localStorage.setItem('cls_recs_v4', JSON.stringify(records));
+            localStorage.setItem('cls_cats_v4', JSON.stringify(categories));
+            localStorage.setItem('cls_conf_v4', JSON.stringify(config));
+        };
+
+        const getCatColor = (cat) => {
+            const index = categories.indexOf(cat);
+            return COLORS[index >= 0 ? index % COLORS.length : 0];
+        };
+        const escapeHTML = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        }[char]));
+        const encodeValue = (value) => encodeURIComponent(String(value ?? ''));
+        const decodeValue = (value) => decodeURIComponent(value);
+        const getDateRange = () => {
+            const start = document.getElementById('stats-start-date').value;
+            const end = document.getElementById('stats-end-date').value;
+            return start <= end ? [start, end] : [end, start];
+        };
+
+        const hasAdminAccount = () => Boolean(config.auth?.enabled && config.auth.username && config.auth.passwordHash);
+
+        async function hashPassword(password) {
+            const data = new TextEncoder().encode(password);
+            if (window.crypto?.subtle) {
+                const digest = await window.crypto.subtle.digest('SHA-256', data);
+                return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+            let hash = 2166136261;
+            for (const byte of data) hash = Math.imul(hash ^ byte, 16777619);
+            return `fallback-${(hash >>> 0).toString(16)}`;
+        }
+
+        function requireAdmin(action, description = '此操作') {
+            if (isAuthenticated) return true;
+            if (!hasAdminAccount()) {
+                showActionToast('請先到「系統設定」建立管理帳號');
+                switchView('settings');
+                return false;
+            }
+            pendingAdminAction = action;
+            openLoginModal(description);
+            return false;
+        }
+
+        function handleAuthButton() {
+            if (isAuthenticated) logoutAdmin();
+            else openLoginModal();
+        }
+
+        function openLoginModal(description = '請輸入管理帳號與密碼。') {
+            const message = document.getElementById('auth-modal-message');
+            const error = document.getElementById('auth-login-error');
+            const username = document.getElementById('auth-login-username');
+            message.textContent = hasAdminAccount() ? `登入後才能${description}。` : '尚未設定管理帳號，請先到系統設定建立。';
+            error.textContent = '';
+            if (hasAdminAccount()) username.value = config.auth.username;
+            document.getElementById('auth-modal').classList.remove('hidden');
+            if (hasAdminAccount()) setTimeout(() => document.getElementById('auth-login-password')?.focus(), 0);
+        }
+
+        function closeAuthModal(clearPending = true) {
+            document.getElementById('auth-modal').classList.add('hidden');
+            if (clearPending) pendingAdminAction = null;
+        }
+
+        async function submitLogin() {
+            const error = document.getElementById('auth-login-error');
+            if (!hasAdminAccount()) {
+                error.textContent = '尚未設定管理帳號，請先到系統設定建立。';
+                return;
+            }
+            const username = document.getElementById('auth-login-username').value.trim();
+            const password = document.getElementById('auth-login-password').value;
+            if (username !== config.auth.username || await hashPassword(password) !== config.auth.passwordHash) {
+                error.textContent = '帳號或密碼錯誤。';
+                return;
+            }
+            isAuthenticated = true;
+            updateAuthUI();
+            closeAuthModal(false);
+            document.getElementById('auth-login-password').value = '';
+            showActionToast('管理員登入成功');
+            const action = pendingAdminAction;
+            pendingAdminAction = null;
+            if (action) await action();
+        }
+
+        function logoutAdmin() {
+            isAuthenticated = false;
+            updateAuthUI();
+            showActionToast('已登出管理員帳號');
+            if (!document.getElementById('view-settings').classList.contains('hidden')) switchView('browse');
+        }
+
+        async function saveAdminCredentials() {
+            if (hasAdminAccount() && !requireAdmin(() => saveAdminCredentials(), '修改管理帳號')) return;
+            const username = document.getElementById('admin-username').value.trim();
+            const password = document.getElementById('admin-password').value;
+            const confirmPassword = document.getElementById('admin-password-confirm').value;
+            const message = document.getElementById('admin-account-message');
+            if (!username || password.length < 4) { message.textContent = '帳號不可空白，密碼至少需要 4 個字元。'; message.className = 'text-xs font-bold text-rose-500'; return; }
+            if (password !== confirmPassword) { message.textContent = '兩次輸入的密碼不一致。'; message.className = 'text-xs font-bold text-rose-500'; return; }
+            config.auth = { enabled: true, username, passwordHash: await hashPassword(password) };
+            isAuthenticated = true;
+            save();
+            updateAuthUI();
+            message.textContent = '管理帳號已儲存，後續管理操作需要登入。';
+            message.className = 'text-xs font-bold text-emerald-600';
+            document.getElementById('admin-password').value = '';
+            document.getElementById('admin-password-confirm').value = '';
+            showActionToast('管理帳號設定完成');
+        }
+
+        function updateAuthUI() {
+            const icon = document.getElementById('auth-status-icon');
+            const text = document.getElementById('auth-status-text');
+            const button = document.getElementById('auth-status-button');
+            const status = document.getElementById('admin-account-status');
+            if (isAuthenticated) {
+                icon.className = 'fas fa-lock-open';
+                text.textContent = '已登入';
+                button?.setAttribute('aria-label', '登出管理員帳號');
+            } else {
+                icon.className = 'fas fa-lock';
+                text.textContent = '登入';
+                button?.setAttribute('aria-label', '管理員登入');
+            }
+            if (status) {
+                status.textContent = hasAdminAccount() ? (isAuthenticated ? '已登入' : '已設定') : '尚未設定';
+                status.className = hasAdminAccount() && isAuthenticated ? 'text-[0.625rem] font-black bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md' : 'text-[0.625rem] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-md';
+            }
+        }
+
+        function selectCategory(encodedCategory) {
+            selectedCategory = decodeValue(encodedCategory);
+            renderCategorySelector();
+            renderStudentGrid();
+        }
+
+        function switchView(view) {
+            if (view === 'settings' && !isAuthenticated) {
+                pendingAdminAction = () => switchView('settings');
+                openLoginModal('進入系統設定');
+                return;
+            }
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`view-${view}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`nav-${view}`).classList.add('active');
+
+            if (view === 'register') { renderCategorySelector(); renderStudentGrid(); }
+            if (view === 'browse') renderBrowseView();
+            if (view === 'stats') renderStats();
+            if (view === 'settings') renderSettings();
+            
+            window.scrollTo({top: 0, behavior: 'auto'});
+        }
+
+        function renderCategorySelector() {
+            const container = document.getElementById('register-category-selector');
+            container.innerHTML = categories.map(cat => {
+                const color = getCatColor(cat);
+                const isActive = selectedCategory === cat;
+                return `<button onclick="selectCategory('${encodeValue(cat)}')" 
+                    class="px-5 py-2 rounded-xl font-black transition-all text-xs ${isActive ? 'btn-active-'+color : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
+                    ${escapeHTML(cat)}</button>`;
+            }).join('');
+        }
+
+        function renderStudentGrid() {
+            const grid = document.getElementById('student-grid');
+            const search = document.getElementById('student-search').value.trim().toLowerCase();
+            const date = document.getElementById('register-date').value;
+            const filtered = students.filter(s => s.name.includes(search) || s.seatNo.includes(search));
+            
+            grid.innerHTML = filtered.map(s => {
+                const count = records.filter(r => r.sid === s.id && r.date === date && r.cat === selectedCategory).length;
+                const color = getCatColor(selectedCategory);
+                return `<button onclick="addRecord('${s.id}')" class="student-card p-4 bg-white rounded-2xl text-left">
+                    <span class="text-[0.5625rem] font-black text-slate-300">#${escapeHTML(s.seatNo)}</span>
+                    <div class="text-base font-black text-slate-800 mb-2">${escapeHTML(s.name)}</div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-1">${Array(Math.min(count, 3)).fill(`<div class="w-1.5 h-1.5 rounded-full bg-${color}-400"></div>`).join('')}</div>
+                        <span class="text-xl font-black ${count > 0 ? 'text-'+color+'-500' : 'text-slate-100'}">${count}</span>
+                    </div></button>`;
+            }).join('') || `<div class="col-span-full py-10 text-center empty-state rounded-2xl">
+                <i class="fas fa-user-slash text-slate-300"></i><p class="text-slate-400 text-xs font-bold mt-2">找不到符合條件的學生</p></div>`;
+            renderRecentRecords();
+        }
+
+        function addRecord(sid) {
+            if (!requireAdmin(() => addRecord(sid), '登記資料')) return;
+            const s = students.find(x => x.id === sid);
+            if (!s) return;
+            const date = document.getElementById('register-date').value;
+            records.unshift({ id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}_${Math.random()}`, sid, seatNo: s.seatNo, name: s.name, cat: selectedCategory, date, time: new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' }) });
+            save();
+            renderStudentGrid();
+            showActionToast(`已登記：座號 ${s.seatNo}　${s.name}`);
+        }
+
+        function showActionToast(message) {
+            const toast = document.getElementById('action-toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(window.actionToastTimer);
+            window.actionToastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        function renderRecentRecords() {
+            const container = document.getElementById('recent-records');
+            container.innerHTML = records.slice(0, 12).map(r => `
+                <div class="py-2 px-3 flex justify-between items-center group rounded-xl hover:bg-slate-50/80">
+                    <div class="flex items-center gap-3">
+                        <div class="w-1 h-5 rounded-full bg-${getCatColor(r.cat)}-400"></div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-700 text-xs">座號 ${escapeHTML(r.seatNo || students.find(s => s.id === r.sid)?.seatNo || '—')}　${escapeHTML(r.name)}</span>
+                            <span class="text-[0.5625rem] text-slate-400 font-bold uppercase">${escapeHTML(r.cat)} · ${escapeHTML(r.date)} · ${escapeHTML(r.time)}</span>
+                        </div>
+                    </div>
+                    <button onclick="deleteRecord('${encodeValue(r.id)}')" class="record-delete icon-button text-slate-300 hover:text-rose-500 transition px-2" aria-label="刪除這筆記錄" title="刪除這筆記錄"><i class="fas fa-trash-can text-[0.625rem]"></i></button>
+                </div>`).join('');
+        }
+
+        function deleteRecord(encodedId) {
+            if (!requireAdmin(() => deleteRecord(encodedId), '刪除資料')) return;
+            const id = decodeValue(encodedId);
+            records = records.filter(r => String(r.id) !== id);
+            save();
+            renderStudentGrid();
+            renderBrowseView();
+            if (!document.getElementById('view-stats').classList.contains('hidden')) renderStats();
+        }
+
+        function renderBrowseView() {
+            const date = document.getElementById('browse-date').value;
+            const filtered = records.filter(r => r.date === date);
+            const content = document.getElementById('browse-content');
+            const empty = document.getElementById('browse-empty');
+
+            if (filtered.length === 0) { content.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+
+            content.innerHTML = categories.map(cat => {
+                const catRecs = filtered.filter(r => r.cat === cat);
+                if (catRecs.length === 0) return '';
+                const summary = {};
+                catRecs.forEach(r => summary[r.sid] = (summary[r.sid] || 0) + 1);
+                const color = getCatColor(cat);
+
+                return `<div class="glass-card rounded-3xl p-6 flex flex-col border-b-4 border-${color}-400">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-black text-slate-800 text-lg">${escapeHTML(cat)}</h4>
+                        <span class="text-[0.5625rem] font-black text-slate-400 bg-slate-100 px-2 py-1 rounded-md uppercase">${catRecs.length} 次</span>
+                    </div>
+                    <div class="space-y-1">
+                        ${Object.entries(summary).sort((a, b) => b[1] - a[1]).map(([sid, count]) => {
+                            const s = students.find(x => x.id === sid);
+                            return `<div class="py-2 px-4 rounded-xl bg-white/50 flex justify-between items-center border border-slate-50">
+                                <div class="min-w-0"><span class="font-bold text-slate-600 text-sm truncate block">${escapeHTML(s?.name || '已移除')}</span><span class="text-[0.5625rem] text-slate-400">${s ? `座號 ${escapeHTML(s.seatNo)}` : '原學生資料已移除'}</span></div>
+                                <div class="flex items-center gap-2 ml-3"><span class="font-black text-${color}-500">${count}</span><button onclick="deleteStudentCategoryForDate('${encodeValue(sid)}', '${encodeValue(cat)}', '${date}')" class="record-delete icon-button text-slate-300 hover:text-rose-500" aria-label="刪除 ${escapeHTML(cat)} 記錄" title="刪除這位學生此類別的當日記錄"><i class="fas fa-trash-can text-[0.625rem]"></i></button></div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function deleteStudentCategoryForDate(encodedSid, encodedCat, date) {
+            if (!requireAdmin(() => deleteStudentCategoryForDate(encodedSid, encodedCat, date), '刪除資料')) return;
+            const sid = decodeValue(encodedSid);
+            const cat = decodeValue(encodedCat);
+            const target = records.filter(r => r.sid === sid && r.cat === cat && r.date === date);
+            if (!target.length) return;
+            const student = students.find(s => s.id === sid);
+            if (confirm(`確定刪除「${student?.name || '此學生'}」${date} 的「${cat}」共 ${target.length} 筆記錄？`)) {
+                records = records.filter(r => !(r.sid === sid && r.cat === cat && r.date === date));
+                save();
+                renderBrowseView();
+                renderStudentGrid();
+            }
+        }
+
+        function renderStats() {
+            const [start, end] = getDateRange();
+            const filtered = records.filter(r => r.date >= start && r.date <= end);
+            
+            const data = students.map(s => {
+                const sRecs = filtered.filter(r => r.sid === s.id);
+                const obj = { id: s.id, seatNo: s.seatNo, name: s.name, total: sRecs.length };
+                categories.forEach(cat => obj[cat] = sRecs.filter(r => r.cat === cat).length);
+                return obj;
+            });
+
+            data.sort((a,b) => {
+                let vA = a[statsSort.key], vB = b[statsSort.key];
+                if (typeof vA === 'string' && !isNaN(vA)) { vA = Number(vA); vB = Number(vB); }
+                return statsSort.asc ? (vA > vB ? 1 : -1) : (vA < vB ? 1 : -1);
+            });
+
+            document.getElementById('stats-header-row').innerHTML = `
+                <th onclick="toggleSort('seatNo')" class="cursor-pointer py-4 px-4 text-center">座號</th>
+                <th onclick="toggleSort('name')" class="cursor-pointer py-4 px-4">姓名</th>
+                ${categories.map(cat => `<th onclick="toggleSort('${encodeValue(cat)}')" class="cursor-pointer py-4 px-4 text-center">${escapeHTML(cat)}</th>`).join('')}
+                <th onclick="toggleSort('total')" class="cursor-pointer py-4 px-4 text-center bg-indigo-50/50">合計</th>
+                <th class="py-4 px-4 text-center">操作</th>
+            `;
+
+            document.getElementById('stats-table-body').innerHTML = data.map(row => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 text-center text-[0.625rem] font-mono font-bold text-slate-300">${escapeHTML(row.seatNo)}</td>
+                    <td class="py-3 px-4 font-black text-slate-700 text-sm">${escapeHTML(row.name)}</td>
+                    ${categories.map(cat => `
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="showDetails('${row.id}', '${encodeValue(cat)}')" class="w-8 h-8 rounded-lg font-black text-xs transition ${row[cat] > 0 ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white' : 'text-slate-100'}" aria-label="查看 ${escapeHTML(cat)} 詳情">${row[cat]}</button>
+                        </td>`).join('')}
+                    <td class="py-3 px-4 text-center font-black text-indigo-700 bg-indigo-50/20 text-base">${row.total}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="deleteStudentStats('${row.id}')" class="text-slate-200 hover:text-rose-500 transition" title="刪除目前期間記錄">
+                            <i class="fas fa-trash-can text-[0.625rem]"></i>
+                        </button>
+                    </td>
+                </tr>`).join('');
+
+            document.getElementById('stats-empty').classList.toggle('hidden', students.length > 0);
+        }
+
+        function toggleSort(encodedKey) {
+            const k = ['seatNo', 'name', 'total'].includes(encodedKey) ? encodedKey : decodeValue(encodedKey);
+            statsSort.asc = statsSort.key === k ? !statsSort.asc : true;
+            statsSort.key = k;
+            renderStats();
+        }
+
+        function showDetails(sid, cat) {
+            cat = decodeValue(cat);
+            const s = students.find(x => x.id === sid);
+            const [start, end] = getDateRange();
+            const filtered = records.filter(r => r.sid === sid && r.cat === cat && r.date >= start && r.date <= end);
+            if (filtered.length === 0) { closeModal(); return; }
+
+            document.getElementById('modal-title-name').innerText = s?.name || '已移除學生';
+            document.getElementById('modal-title-cat').innerText = cat;
+            document.getElementById('modal-content').innerHTML = filtered.map(r => `
+                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 group">
+                    <div><span class="text-[0.625rem] font-black text-slate-600">${escapeHTML(r.date)}</span> <span class="text-[0.5625rem] font-bold text-slate-300 ml-2">${escapeHTML(r.time)}</span></div>
+                    <button onclick="deleteInModal('${encodeValue(r.id)}', '${sid}', '${encodeValue(cat)}')" class="icon-button rounded-full bg-white text-rose-300 hover:text-rose-500 shadow-sm transition"><i class="fas fa-trash-can text-[0.625rem]"></i></button>
+                </div>`).join('');
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function deleteInModal(encodedRid, sid, encodedCat) {
+            if (!requireAdmin(() => deleteInModal(encodedRid, sid, encodedCat), '刪除資料')) return;
+            const rid = decodeValue(encodedRid);
+            records = records.filter(r => String(r.id) !== rid);
+            save();
+            renderStats();
+            showDetails(sid, encodedCat);
+        }
+
+        function closeModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+        function deleteStudentStats(sid) {
+            if (!requireAdmin(() => deleteStudentStats(sid), '刪除資料')) return;
+            const [start, end] = getDateRange();
+            const target = records.filter(r => r.sid === sid && r.date >= start && r.date <= end);
+            if (target.length === 0) return;
+
+            const s = students.find(x => x.id === sid);
+            if (confirm(`確定刪除「${s?.name || '此學生'}」在 ${start} 至 ${end} 的 ${target.length} 筆記錄？`)) {
+                records = records.filter(r => !(r.sid === sid && r.date >= start && r.date <= end));
+                save();
+                closeModal();
+                renderStats();
+                renderBrowseView();
+            }
+        }
+
+        function updateSystemName(val) { config.systemName = val || '常規點名'; applyConfig(); save(); }
+        
+        function updateFontSize(val) { 
+            config.fontSize = Math.max(16, Math.min(24, parseInt(val) || 18)); 
+            applyConfig(); 
+            save(); 
+        }
+
+        function updateTheme(theme) {
+            if (!['sky', 'forest', 'lavender', 'sunset'].includes(theme)) return;
+            config.theme = theme;
+            applyAppearance();
+            save();
+        }
+
+        function updateDisplayMode(mode) {
+            if (!['light', 'dark', 'system'].includes(mode)) return;
+            config.displayMode = mode;
+            applyAppearance();
+            save();
+        }
+
+        function updateCompactMode(enabled) {
+            config.compact = Boolean(enabled);
+            applyAppearance();
+            save();
+        }
+
+        function applyAppearance() {
+            const mode = config.displayMode || 'light';
+            const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+            document.body.dataset.theme = config.theme || 'sky';
+            document.body.dataset.mode = mode;
+            document.body.classList.toggle('dark-mode', mode === 'dark' || (mode === 'system' && prefersDark));
+            document.body.classList.toggle('compact-mode', Boolean(config.compact));
+            const themeSelect = document.getElementById('appearance-theme');
+            const modeSelect = document.getElementById('appearance-mode');
+            const fontInput = document.getElementById('appearance-font-size');
+            const fontValue = document.getElementById('appearance-font-value');
+            const compactInput = document.getElementById('appearance-compact');
+            if (themeSelect) themeSelect.value = config.theme || 'sky';
+            if (modeSelect) modeSelect.value = mode;
+            if (fontInput) fontInput.value = config.fontSize;
+            if (fontValue) fontValue.textContent = `${Math.round((config.fontSize / 18) * 100)}%`;
+            if (compactInput) compactInput.checked = Boolean(config.compact);
+        }
+
+        function openAppearanceModal() {
+            applyAppearance();
+            document.getElementById('appearance-modal').classList.remove('hidden');
+        }
+
+        function closeAppearanceModal() {
+            document.getElementById('appearance-modal').classList.add('hidden');
+        }
+
+        function resetAppearance() {
+            config.theme = 'sky';
+            config.displayMode = 'light';
+            config.fontSize = 18;
+            config.compact = false;
+            applyConfig();
+            save();
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeAppearanceModal();
+                closeAuthModal();
+            }
+        });
+
+        function applyConfig() {
+            document.getElementById('header-system-name').innerText = config.systemName;
+            document.getElementById('page-title').innerText = config.systemName;
+            const legacyFontValue = document.getElementById('font-size-val');
+            if (legacyFontValue) legacyFontValue.innerText = config.fontSize;
+            document.documentElement.style.setProperty('--base-font-size', `${Number(config.fontSize) || 18}px`);
+            applyAppearance();
+            updateAuthUI();
+        }
+
+        function renderSettings() {
+            document.getElementById('student-count').innerText = `${students.length} 人`;
+            document.getElementById('student-list').innerHTML = students.map(s => `
+                <div class="py-2.5 px-4 flex justify-between items-center hover:bg-white transition group border-b border-slate-50">
+                    <span class="text-xs font-bold text-slate-500">#${escapeHTML(s.seatNo)} <span class="ml-2 text-slate-800 font-black">${escapeHTML(s.name)}</span></span>
+                    <button onclick="removeStudent('${s.id}')" class="record-delete icon-button text-slate-300 hover:text-rose-500 transition" aria-label="移除 ${escapeHTML(s.name)}" title="移除學生"><i class="fas fa-minus-circle"></i></button>
+                </div>`).join('');
+            document.getElementById('category-tags').innerHTML = categories.map(cat => `
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-slate-100 text-[0.625rem] font-black shadow-sm">
+                    <div class="w-1.5 h-1.5 rounded-full bg-${getCatColor(cat)}-400"></div> ${escapeHTML(cat)}
+                    <button onclick="removeCategory('${encodeValue(cat)}')" class="record-delete text-slate-300 hover:text-rose-500 ml-1" aria-label="移除 ${escapeHTML(cat)}" title="移除類別"><i class="fas fa-times"></i></button>
+                </div>`).join('');
+            document.getElementById('config-system-name').value = config.systemName;
+            document.getElementById('admin-username').value = config.auth?.username || '';
+            applyAppearance();
+            updateAuthUI();
+        }
+
+        function importStudents() {
+            if (!requireAdmin(() => importStudents(), '匯入學生名單')) return;
+            const raw = document.getElementById('import-text').value.trim();
+            if (!raw) return;
+            students = parseStudents(raw); save(); renderSettings(); renderBrowseView(); renderStats(); document.getElementById('import-text').value = '';
+        }
+
+        function resetToDefaultStudents() {
+            if (!requireAdmin(() => resetToDefaultStudents(), '重置學生名單')) return;
+            if (confirm('確定重置學生名單？')) { students = parseStudents(DEFAULT_STUDENTS_RAW); save(); renderSettings(); renderBrowseView(); renderStats(); }
+        }
+
+        function addCategory() {
+            if (!requireAdmin(() => addCategory(), '管理資料')) return;
+            const v = document.getElementById('new-category').value.trim();
+            if (v && !categories.includes(v)) { categories.push(v); save(); renderSettings(); renderBrowseView(); renderStats(); document.getElementById('new-category').value = ''; }
+        }
+
+        function removeCategory(cat) {
+            if (!requireAdmin(() => removeCategory(cat), '管理資料')) return;
+            cat = decodeValue(cat);
+            const relatedCount = records.filter(r => r.cat === cat).length;
+            if (categories.length > 1 && confirm(`移除類別「${cat}」並刪除相關的 ${relatedCount} 筆記錄？`)) {
+                categories = categories.filter(c => c !== cat);
+                records = records.filter(r => r.cat !== cat);
+                if (!categories.includes(selectedCategory)) selectedCategory = categories[0];
+                save();
+                renderSettings();
+                renderBrowseView();
+                renderStats();
+            }
+        }
+
+        function removeStudent(id) {
+            if (!requireAdmin(() => removeStudent(id), '管理資料')) return;
+            const student = students.find(s => s.id === id);
+            const relatedCount = records.filter(r => r.sid === id).length;
+            if (confirm(`移除「${student?.name || '此學生'}」並刪除相關的 ${relatedCount} 筆記錄？`)) {
+                students = students.filter(s => s.id !== id);
+                records = records.filter(r => r.sid !== id);
+                save();
+                renderSettings();
+                renderBrowseView();
+                renderStats();
+            }
+        }
+
+        // 新增：清除記錄
+        function clearAllRecords() {
+            if (!requireAdmin(() => clearAllRecords(), '清除資料')) return;
+            if (confirm('⚠️ 警告：這將永久刪除所有歷史點名記錄。是否確定？')) {
+                records = [];
+                save();
+                switchView('browse');
+                alert('已清除所有記錄。');
+            }
+        }
+
+        // 新增：工廠重設
+        function factoryReset() {
+            if (!requireAdmin(() => factoryReset(), '完全重設資料')) return;
+            if (confirm('🚨 極度危險：這將清空所有記錄、名單與設定，並恢復初始狀態。是否確定？')) {
+                ['cls_stus_v4', 'cls_recs_v4', 'cls_cats_v4', 'cls_conf_v4'].forEach(key => localStorage.removeItem(key));
+                location.reload();
+            }
+        }
+
+        function csvEscape(value) {
+            const text = String(value ?? '');
+            return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+        }
+
+        function exportToCSV() {
+            if (!requireAdmin(() => exportToCSV(), '匯出統計資料')) return;
+            const [start, end] = getDateRange();
+            const filtered = records.filter(r => r.date >= start && r.date <= end);
+            let csv = "\ufeff" + ["座號", "姓名", ...categories, "總計"].map(csvEscape).join(",") + "\n";
+            students.forEach(s => {
+                const sRecs = filtered.filter(r => r.sid === s.id);
+                const row = [s.seatNo, s.name];
+                categories.forEach(cat => row.push(sRecs.filter(r => r.cat === cat).length));
+                row.push(sRecs.length);
+                csv += row.map(csvEscape).join(",") + "\n";
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `班級常規報表_${start}_${end}.csv`;
+            a.click();
+        }
+
+        function parseCSV(text) {
+            const rows = [];
+            let row = [];
+            let field = '';
+            let quoted = false;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const next = text[i + 1];
+                if (char === '"' && quoted && next === '"') { field += '"'; i++; continue; }
+                if (char === '"') { quoted = !quoted; continue; }
+                if (char === ',' && !quoted) { row.push(field); field = ''; continue; }
+                if ((char === '\n' || char === '\r') && !quoted) {
+                    if (char === '\r' && next === '\n') i++;
+                    row.push(field); field = '';
+                    if (row.some(value => value.trim() !== '')) rows.push(row);
+                    row = [];
+                    continue;
+                }
+                field += char;
+            }
+            if (field !== '' || row.length) {
+                row.push(field);
+                if (row.some(value => value.trim() !== '')) rows.push(row);
+            }
+            return rows;
+        }
+
+        async function importRecordsFromCSV(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            event.target.value = '';
+            if (!requireAdmin(() => processRecordImport(file), '匯入資料')) return;
+            await processRecordImport(file);
+        }
+
+        async function processRecordImport(file) {
+            const status = document.getElementById('records-import-status');
+            try {
+                const rows = parseCSV(await file.text());
+                if (rows.length < 2) throw new Error('CSV 沒有可匯入的資料列。');
+                const headers = rows[0].map(value => value.replace(/^\uFEFF/, '').trim().toLowerCase());
+                const findColumn = (...names) => headers.findIndex(header => names.includes(header));
+                const dateIndex = findColumn('日期', 'date');
+                const timeIndex = findColumn('時間', 'time');
+                const seatIndex = findColumn('座號', 'seatno', 'seat no');
+                const nameIndex = findColumn('姓名', 'name');
+                const categoryIndex = findColumn('類別', 'category', 'cat');
+                const studentIdIndex = findColumn('學生id', 'studentid', 'student id');
+                const recordIdIndex = findColumn('記錄id', 'recordid', 'record id');
+                if ([dateIndex, seatIndex, nameIndex, categoryIndex].some(index => index < 0)) {
+                    throw new Error('CSV 欄位不足，至少需要：日期、座號、姓名、類別。');
+                }
+
+                let added = 0;
+                let skipped = 0;
+                const importedCategories = new Set();
+                rows.slice(1).forEach(row => {
+                    const date = (row[dateIndex] || '').trim();
+                    const time = timeIndex >= 0 ? (row[timeIndex] || '').trim() : '00:00';
+                    const seatNo = (row[seatIndex] || '').trim().padStart(2, '0');
+                    const name = (row[nameIndex] || '').trim();
+                    const cat = (row[categoryIndex] || '').trim();
+                    const importedStudentId = studentIdIndex >= 0 ? (row[studentIdIndex] || '').trim() : '';
+                    const importedRecordId = recordIdIndex >= 0 ? (row[recordIdIndex] || '').trim() : '';
+                    const student = students.find(s => (importedStudentId && s.id === importedStudentId) || (s.seatNo === seatNo && s.name === name) || (s.seatNo === seatNo && !name));
+                    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !student || !cat) { skipped++; return; }
+                    const duplicate = records.some(record => String(record.id) === importedRecordId || (record.sid === student.id && record.date === date && record.time === time && record.cat === cat));
+                    if (duplicate) { skipped++; return; }
+                    records.push({ id: importedRecordId || `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, sid: student.id, seatNo: student.seatNo, name: student.name, cat, date, time });
+                    importedCategories.add(cat);
+                    added++;
+                });
+                importedCategories.forEach(cat => { if (!categories.includes(cat)) categories.push(cat); });
+                save();
+                renderSettings();
+                renderBrowseView();
+                renderStudentGrid();
+                renderStats();
+                status.textContent = `已匯入 ${added} 筆記錄${skipped ? `，略過 ${skipped} 筆` : ''}。`;
+                status.className = 'text-[0.625rem] text-emerald-600 font-bold mb-4';
+            } catch (error) {
+                status.textContent = `匯入失敗：${error.message}`;
+                status.className = 'text-[0.625rem] text-rose-600 font-bold mb-4';
+            }
+        }
+
+        function exportRecordsToCSV() {
+            if (!requireAdmin(() => exportRecordsToCSV(), '匯出完整記錄')) return;
+            const headers = ['記錄ID', '學生ID', '日期', '時間', '座號', '姓名', '類別'];
+            const rows = records.map(record => {
+                const student = students.find(s => s.id === record.sid);
+                return [record.id, record.sid, record.date, record.time, student?.seatNo || '', record.name, record.cat];
+            });
+            const csv = '\ufeff' + [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\n') + '\n';
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `班級完整記錄_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.onload = () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('register-date').value = today;
+            document.getElementById('browse-date').value = today;
+            const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+            document.getElementById('stats-start-date').value = weekAgo.toISOString().split('T')[0];
+            document.getElementById('stats-end-date').value = today;
+            applyConfig();
+            switchView('browse');
+        };
+    </script>
+</body>
+</html>
