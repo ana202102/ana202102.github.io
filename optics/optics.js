@@ -91,8 +91,8 @@
       let status;if(!converging)status='正立・縮小・虛像';else if(Math.abs(u-f)<.6)status='焦點上・像在無限遠';else if(u<f)status='正立・放大・虛像';else if(Math.abs(u-2*f)<.6)status='倒立・等大・實像';else if(u<2*f)status='倒立・放大・實像';else status='倒立・縮小・實像';
       update([["物距 u",`${state.distance} cm`],["像距 v",`${fmt(Math.abs(v)/1.1)} cm${virtual?'（虛）':''}`],["物高 h",`${state.height} cm`],["像高 h′",`${fmt(state.height*Math.abs(m))} cm`],["放大率 m",`${fmt(Math.abs(m))} ${m<0?'×（倒立）':'×'}`],["成像狀態",status]],`<b>薄透鏡公式：</b> 1／f ＝ 1／u ＋ 1／v<br><b>放大率：</b> m ＝ −v／u ＝ h′／h<br>焦距 f ＝ ${converging?'':'−'}${state.focal} cm`);
     } else {
-      const vertex=mirrorX;const edge=mode==='concave'?vertex+28:vertex-28,control=mode==='concave'?vertex-28:vertex+28;ctx.beginPath();ctx.moveTo(edge,-120);ctx.quadraticCurveTo(control,0,edge,120);ctx.strokeStyle=colors.cyan;ctx.lineWidth=5;ctx.stroke();
-      for(let yy=-110;yy<=110;yy+=17){const xx=vertex+(mode==='concave'?-1:1)*(29*(1-(yy/120)**2));line(xx,yy,xx+(mode==='concave'?-9:9),yy+9,colors.hatch,1.2)}
+      const vertex=mirrorX,surfaceX=y=>vertex+(mode==='concave'?-1:1)*28*(y/120)**2;const edge=mode==='concave'?vertex-28:vertex+28,control=mode==='concave'?vertex+28:vertex-28;ctx.beginPath();ctx.moveTo(edge,-120);ctx.quadraticCurveTo(control,0,edge,120);ctx.strokeStyle=colors.cyan;ctx.lineWidth=5;ctx.stroke();
+      for(let yy=-110;yy<=110;yy+=17){const xx=surfaceX(yy);line(xx,yy,xx+9,yy+9,colors.hatch,1.2)}
       const F=mode==='concave'?vertex-f:vertex+f,C=mode==='concave'?vertex-2*f:vertex+2*f;
       dot(F,0,colors.gold,4);dot(C,0,colors.secondary,3);label('F',F,18,colors.gold);label('C',C,18,colors.secondary);label(mode==='concave'?'凹面鏡':'凸面鏡',vertex,151,colors.cyan);
       const ox=vertex-u;let v,m;
@@ -102,20 +102,21 @@
       if(state.rays&&mode==='concave'){
         const top=-ho;
         // Principal ray 1: parallel to the axis, then through F (or its virtual extension).
-        line(ox,top,vertex,top,colors.gold,1.6);rayHead(vertex-4,top,1,colors.gold);
-        if(v>0){if(visibleImage)line(vertex,top,ix,iy,colors.gold,1.5);else line(vertex,top,F,0,colors.gold,1.5)}else{line(vertex,top,F,0,colors.gold,1.5);if(visibleImage)line(vertex,top,ix,iy,colors.goldSoft,1.4,[5,5])}animationPath=[[ox,top],[vertex,top],v>0&&visibleImage?[ix,iy]:[F,0]];
+        const p1=surfaceX(top),endX=vertex-125,slope=(iy-top)/(ix-p1);
+        line(ox,top,p1,top,colors.gold,1.6);rayHead(p1-4,top,1,colors.gold);
+        if(v>0&&visibleImage)line(p1,top,ix,iy,colors.gold,1.5);else{line(p1,top,endX,top+(endX-p1)*slope,colors.gold,1.5);if(visibleImage)line(p1,top,ix,iy,colors.goldSoft,1.4,[5,5])}const rayEndX=v>0&&visibleImage?ix:endX,rayEndY=v>0&&visibleImage?iy:top+(endX-p1)*slope;animationPath=[[ox,top],[p1,top],[rayEndX,rayEndY]];
         // Principal ray 2: through the vertex; its reflected path and backward extension meet at the image.
         line(ox,top,vertex,0,colors.coral,1.4);
         if(visibleImage&&v>0)line(vertex,0,ix,iy,colors.coral,1.5);else{const endX=vertex-125,slope=Number.isFinite(v)?iy/(ix-vertex):0;line(vertex,0,endX,slope*(endX-vertex),colors.coral,1.4);if(visibleImage)line(vertex,0,ix,iy,colors.coralSoft,1.4,[5,5])}
         dot(vertex,top,colors.gold,3);dot(vertex,0,colors.coral,3);
       }else if(state.rays){const top=-ho;
         if(mode==='convex'){
-          const endX=vertex-135,endY=top+(endX-vertex)*top/(vertex-F),imageY=iy;
+          const p1=surfaceX(top),endX=vertex-135,endY=top+(endX-p1)*top/(p1-F),imageY=iy,p2=surfaceX(imageY);
           // Ray 1: parallel to the axis, reflected outward; its backward extension passes through F.
-          line(ox,top,vertex,top,colors.gold,1.6);line(vertex,top,endX,endY,colors.gold,1.5);line(vertex,top,F,0,colors.goldSoft,1.4,[5,5]);
+          line(ox,top,p1,top,colors.gold,1.6);line(p1,top,endX,endY,colors.gold,1.5);line(p1,top,F,0,colors.goldSoft,1.4,[5,5]);
           // Ray 2: aimed toward F, reflected parallel to the axis; its extension reaches the virtual image.
-          line(ox,top,vertex,imageY,colors.coral,1.4);line(vertex,imageY,endX,imageY,colors.coral,1.5);line(vertex,imageY,ix,iy,colors.coralSoft,1.4,[5,5]);
-          animationPath=[[ox,top],[vertex,top],[endX,endY]];dot(vertex,top,colors.gold,3);dot(vertex,imageY,colors.coral,3);
+          line(ox,top,p2,imageY,colors.coral,1.4);line(p2,imageY,endX,imageY,colors.coral,1.5);line(p2,imageY,ix,iy,colors.coralSoft,1.4,[5,5]);
+          animationPath=[[ox,top],[p1,top],[endX,endY]];dot(p1,top,colors.gold,3);dot(p2,imageY,colors.coral,3);
         }else{
           const rimX=vertex,focusRayY=top*(1-(rimX-ox)/(F-ox));
           line(ox,top,vertex,top,colors.gold,1.6);line(vertex,top,ix,iy,colors.gold,1.5);animationPath=[[ox,top],[vertex,top],[ix,iy]];
