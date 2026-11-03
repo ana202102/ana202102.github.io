@@ -19,12 +19,14 @@
 | `concave-lens.html` | 凹透鏡成像；鏡片上下對稱 |
 | `reflection-law.html` | 反射定律；上半圓量角器，可調入射角並顯示相關角度 |
 | `refraction-law.html` | 折射定律；可調入射角及兩側介質，包含全反射情況 |
+| `rgb-primary.html` | 光的三原色；可調紅、綠、藍光強度，觀察加法混色 |
 
 ## 共用程式
 
 - `optics.js`：依頁面上的 `body[data-mode]` 選擇模擬模式，使用 Canvas 繪製光線、物像、鏡片／鏡面、量角器及數據。參數變更時即時重繪。
 - `optics.css`：共用版面、響應式排版、控制面板與明暗主題樣式。
 - `theme.js`：明暗模式切換及主題狀態同步。
+- `rgb-primary.js`：光的三原色頁面專用繪圖、RGB 強度控制、預設色光與色碼顯示。
 - `README.md`：專案簡介與頁面列表。
 
 ## 操作與物理模型
@@ -36,10 +38,11 @@
 - 反射定律頁只保留量角器上半圓；刻度角度以法線為基準，入射角與反射角相等。
 - 折射定律依史涅耳定律計算折射角；入射光角度可用滑桿或拖曳入射光端點調整。
 - 各模擬頁都可切換明暗模式。光線動畫、光線顯示開關及重設按鈕由共用程式提供。
+- 光的三原色頁以 Canvas 的加法混色繪製紅、綠、藍色光疊加，並顯示 RGB 數值與十六進位色碼；主題切換會同步影響頁面文字和控制介面，色光視窗維持深色以呈現發光效果。
 
 ## 後續更新方式
 
-1. 修改對應的 HTML、`optics.css`、`theme.js` 或 `optics.js`。
+1. 修改對應的 HTML、`optics.css`、`theme.js`、`optics.js` 或 `rgb-primary.js`。
 2. 確認頁面載入的共用 CSS／JavaScript 檔名及相對路徑正確；模擬頁的 `data-mode` 必須與 `optics.js` 使用的模式名稱相符。
 3. 將變更同步至 `ana202102/ana202102.github.io` 的 `main` 分支 `optics/` 目錄。此網站是靜態網站，無需建置或安裝套件；更新 `main` 後由 GitHub Pages 發佈。
 4. 部署後開啟對應的 `https://ana202102.github.io/optics/<頁面檔名>` 確認畫面。瀏覽器或 Pages 快取可能需要重新整理才會顯示新版本。
@@ -54,6 +57,7 @@
 ## 最近完成的工作
 
 - 修正反射定律量角器刻度與角度標籤的範圍，只顯示上半圓，移除左下方殘留刻度。
+- 依「光的三原色 1.swf」新增 `rgb-primary.html` 與 `rgb-primary.js`，支援 RGB 強度滑桿、原色／間色預設、結果色名及 RGB／HEX 數值。
 - 已同步至 GitHub `main`。最近提交：[`d5b137f`](https://github.com/ana202102/ana202102.github.io/commit/d5b137f953819e06a995d4f9c3dd662319d6a8b5)。
 
 ## 已知限制
