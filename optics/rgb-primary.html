@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f7fa">
+  <title>光的三原色｜互動光學實驗室</title>
+  <link rel="stylesheet" href="optics.css">
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a class="brand" href="index.html"><span class="brand-mark">◉</span><span>互動光學實驗室</span></a>
+      <nav class="nav"><a href="index.html">實驗首頁</a><a class="active" href="rgb-primary.html">光的三原色</a></nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" title="切換為暗黑模式">☾ 暗黑模式</button>
+    </header>
+    <div class="eyebrow">ADDITIVE COLOR MIXING</div>
+    <h1>光的三原色</h1>
+    <p class="subtitle">調整紅、綠、藍三束色光的強度，觀察疊加後的顏色。</p>
+    <main class="layout rgb-layout">
+      <section class="stage rgb-stage">
+        <div class="stage-top"><span>色光重疊示意圖</span><div class="legend"><span><i class="dot rgb-red"></i>紅光</span><span><i class="dot rgb-green"></i>綠光</span><span><i class="dot rgb-blue"></i>藍光</span></div></div>
+        <canvas class="rgb-canvas" aria-label="紅、綠、藍三束色光重疊的示意圖"></canvas>
+        <span class="canvas-hint">色光以加法混色方式疊加</span>
+      </section>
+      <aside class="panel rgb-panel" id="rgb-controls">
+        <h2>調整色光強度</h2>
+        <label class="control rgb-control" for="red-range"><span class="control-head"><span>紅光 R</span><strong id="red-value">255</strong></span><input id="red-range" type="range" min="0" max="255" value="255"><span class="range-scale"><span>0</span><span>255</span></span></label>
+        <label class="control rgb-control" for="green-range"><span class="control-head"><span>綠光 G</span><strong id="green-value">255</strong></span><input id="green-range" type="range" min="0" max="255" value="255"><span class="range-scale"><span>0</span><span>255</span></span></label>
+        <label class="control rgb-control" for="blue-range"><span class="control-head"><span>藍光 B</span><strong id="blue-value">255</strong></span><input id="blue-range" type="range" min="0" max="255" value="255"><span class="range-scale"><span>0</span><span>255</span></span></label>
+        <div class="control"><span class="control-head"><span>快速混色</span></span><div class="rgb-presets"><button class="button" data-preset="red">紅</button><button class="button" data-preset="green">綠</button><button class="button" data-preset="blue">藍</button><button class="button" data-preset="yellow">黃</button><button class="button" data-preset="cyan">青</button><button class="button" data-preset="magenta">洋紅</button><button class="button" data-preset="white">白</button><button class="button" data-preset="off">熄滅</button></div></div>
+        <div class="rgb-result" aria-live="polite"><span class="rgb-swatch" id="rgb-swatch"></span><div><strong id="rgb-name">白光</strong><span id="rgb-code">RGB 255, 255, 255 · #FFFFFF</span></div></div>
+        <button class="button" id="rgb-reset" type="button">重設</button>
+      </aside>
+    </main>
+    <section class="intro-card"><span class="intro-icon">✦</span><div><strong>觀察重點</strong><p>紅、綠、藍是色光三原色。兩種色光相加可形成青、洋紅或黃；紅、綠、藍三色光等量相加則形成白光。光的混色屬於加法混色。</p></div></section>
+  </div>
+  <script src="theme.js"></script>
+  <script src="rgb-primary.js"></script>
+</body>
+</html>
