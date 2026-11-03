@@ -108,12 +108,21 @@
         line(ox,top,vertex,0,colors.coral,1.4);
         if(visibleImage&&v>0)line(vertex,0,ix,iy,colors.coral,1.5);else{const endX=vertex-125,slope=Number.isFinite(v)?iy/(ix-vertex):0;line(vertex,0,endX,slope*(endX-vertex),colors.coral,1.4);if(visibleImage)line(vertex,0,ix,iy,colors.coralSoft,1.4,[5,5])}
         dot(vertex,top,colors.gold,3);dot(vertex,0,colors.coral,3);
-      }else if(state.rays){const top=-ho;const rimX=vertex;const focusRayY=top*(1-(rimX-ox)/(F-ox));
-        line(ox,top,vertex,top,colors.gold,1.6);if(mode==='convex'){const endX=vertex-135,endY=top+(endX-vertex)*(iy-top)/(ix-vertex);line(vertex,top,endX,endY,colors.gold,1.5);animationPath=[[ox,top],[vertex,top],[endX,endY]]}else{line(vertex,top,ix,iy,colors.gold,1.5);animationPath=[[ox,top],[vertex,top],[ix,iy]]}
-        line(ox,top,F,0,colors.coral,1.4);line(F,0,vertex,top,colors.coral,1.4);
-        if(mode==='concave'){line(vertex,top,ix,iy,colors.coral,1.4)}else{line(vertex,top,vertex-125,top+(vertex-125-vertex)*(iy-top)/(ix-vertex),colors.coral,1.4);line(vertex,top,ix,iy,colors.coral,1.4,[5,5]);line(vertex,top,F,0,colors.coral,1.4,[5,5])}
-        if(mode==='concave'&&u<f){line(ox,top,vertex,top,colors.gold,1.5);line(vertex,top,ix,iy,colors.gold,1.3);line(vertex,top,ix,iy,colors.coral,1.2,[5,5])}
-        dot(vertex,top,colors.gold,3);
+      }else if(state.rays){const top=-ho;
+        if(mode==='convex'){
+          const endX=vertex-135,endY=top+(endX-vertex)*top/(vertex-F),imageY=iy;
+          // Ray 1: parallel to the axis, reflected outward; its backward extension passes through F.
+          line(ox,top,vertex,top,colors.gold,1.6);line(vertex,top,endX,endY,colors.gold,1.5);line(vertex,top,F,0,colors.goldSoft,1.4,[5,5]);
+          // Ray 2: aimed toward F, reflected parallel to the axis; its extension reaches the virtual image.
+          line(ox,top,vertex,imageY,colors.coral,1.4);line(vertex,imageY,endX,imageY,colors.coral,1.5);line(vertex,imageY,ix,iy,colors.coralSoft,1.4,[5,5]);
+          animationPath=[[ox,top],[vertex,top],[endX,endY]];dot(vertex,top,colors.gold,3);dot(vertex,imageY,colors.coral,3);
+        }else{
+          const rimX=vertex,focusRayY=top*(1-(rimX-ox)/(F-ox));
+          line(ox,top,vertex,top,colors.gold,1.6);line(vertex,top,ix,iy,colors.gold,1.5);animationPath=[[ox,top],[vertex,top],[ix,iy]];
+          line(ox,top,F,0,colors.coral,1.4);line(F,0,vertex,top,colors.coral,1.4);line(vertex,top,ix,iy,colors.coral,1.4);
+          if(u<f){line(ox,top,vertex,top,colors.gold,1.5);line(vertex,top,ix,iy,colors.gold,1.3);line(vertex,top,ix,iy,colors.coral,1.2,[5,5])}
+          dot(vertex,top,colors.gold,3);
+        }
       }
       label(`物距 ${state.distance}`,ox,22,colors.coral);if(visibleImage)label(`像距 ${fmt(Math.abs(v)/1.1)} cm`,ix,22,colors.blue);else label('像距超出圖示範圍',mirrorX+120,22,colors.blue);
       const virtual=mode==='convex'||(mode==='concave'&&u<f);let status;
