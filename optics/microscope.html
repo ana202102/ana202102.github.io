@@ -18,21 +18,21 @@
     </header>
     <div class="eyebrow">COMPOUND MICROSCOPE</div>
     <h1>複式顯微鏡成像</h1>
-    <p class="subtitle">調整物體位置與大小，觀察物鏡形成的中間像及目鏡放大的虛像。</p>
-    <main class="layout">
-      <section class="stage">
+    <p class="subtitle">拖曳物體或調整參數，觀察物鏡形成的中間像及目鏡放大的虛像。</p>
+    <main class="layout microscope-layout">
+      <section class="stage microscope-stage">
         <div class="stage-top">
           <span>雙透鏡光路示意圖</span>
           <div class="legend"><span><i class="dot object"></i>物體</span><span><i class="dot ray"></i>中間像</span><span><i class="dot image"></i>最終虛像</span><span>金／紅：光線</span></div>
         </div>
         <canvas aria-label="複式顯微鏡物鏡、目鏡及成像光線示意圖"></canvas>
-        <span class="canvas-hint">使用右側滑桿調整物距與物高</span>
+        <span class="canvas-hint">拖曳物體調整物距；物高與兩鏡焦距使用右側滑桿</span>
       </section>
-      <aside class="panel" id="controls"></aside>
+      <aside class="panel microscope-panel" id="controls"></aside>
     </main>
     <section class="intro-card">
       <span class="intro-icon">✦</span>
-      <div><strong>觀察重點</strong><p>物體放在物鏡焦點外側時，物鏡先形成倒立放大的實像；這個中間像位於目鏡焦點內，目鏡再形成放大的虛像。整體最後成像為倒立、放大的虛像。圖中的光線為近軸薄透鏡模型，焦距固定。</p></div>
+      <div><strong>觀察重點</strong><p>物體放在物鏡焦點外側時，物鏡先形成倒立放大的實像；目鏡再將中間像放大，形成最後的虛像或實像。拖曳物體可改變物距，右側滑桿可調物高與兩鏡焦距。圖中的光線採近軸薄透鏡模型。</p></div>
     </section>
   </div>
   <script src="theme.js"></script>

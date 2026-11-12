@@ -20,7 +20,7 @@
   canvas.addEventListener('pointerdown',event=>{const p=canvasPoint(event);if(mode==='reflection'||mode==='refraction'){const a=state.angle*Math.PI/180,x=-Math.sin(a)*180,y=-Math.cos(a)*180;if(Math.hypot(p.x-x,p.y-y)<25)dragging='angle'}else{const o=objectGeometry();if(Math.abs(p.x-o.ox)<16&&p.y>-Math.abs(o.tipY)-20&&p.y<18)dragging='object'}if(dragging){canvas.setPointerCapture(event.pointerId);canvas.style.cursor='grabbing';event.preventDefault()}});
   canvas.addEventListener('pointermove',event=>{const p=canvasPoint(event);if(dragging==='angle'){if(p.y<0){state.angle=Math.round(Math.max(0,Math.min(80,Math.atan2(Math.abs(p.x),-p.y)*180/Math.PI)));controls.querySelector('[data-key="angle"]').value=state.angle;draw()}}else if(dragging==='object'){const o=objectGeometry(),mirrorX=mode==='plane'||mode==='convex-lens'||mode==='concave-lens'?0:110,min=config.distance[0],max=config.distance[1];state.distance=Math.round(Math.min(max,Math.max(min,(mirrorX-p.x)/1.1)));const slider=controls.querySelector('[data-key="distance"]');slider.value=state.distance;draw()}else if(mode==='reflection'||mode==='refraction'){const a=state.angle*Math.PI/180,x=-Math.sin(a)*180,y=-Math.cos(a)*180;canvas.style.cursor=Math.hypot(p.x-x,p.y-y)<25?'grab':'default'}else{const o=objectGeometry();canvas.style.cursor=Math.abs(p.x-o.ox)<16&&p.y>-Math.abs(o.tipY)-20&&p.y<18?'grab':'default'}});
   canvas.addEventListener('pointerup',()=>{dragging=false;canvas.style.cursor='default'});canvas.addEventListener('pointercancel',()=>{dragging=false;canvas.style.cursor='default'});
-  let phase=0;function frame(){if(state.animate){phase=(phase+.012)%1;draw()}requestAnimationFrame(frame)}requestAnimationFrame(frame);
+  let phase=0;function frame(){if(state.animate){phase=(phase+.006)%1;draw()}requestAnimationFrame(frame)}requestAnimationFrame(frame);
   const makePalette=()=>document.documentElement.dataset.theme==='dark'?{ink:'#e4edf4',muted:'#a0b2c1',blue:'#72b5fa',cyan:'#64d5dc',coral:'#ff8e7d',gold:'#ffd071',grid:'#2a3945',axis:'#7f93a2',hatch:'#39727a',goldSoft:'#ffd071',coralSoft:'#ff8e7d',secondary:'#9aabba',protractor:'#526674',tickMajor:'#b1c1cc',tick:'#718492',topBg:'#17232d',bottomBg:'#1b2d37',glass:'#6bb7ca99',lens:'#5395a477'}:{ink:'#19314a',muted:'#91a2ae',blue:'#2878c8',cyan:'#33b6c4',coral:'#ef725f',gold:'#e8ad43',grid:'#eaf0f4',axis:'#9aabb7',hatch:'#8bcbd0',goldSoft:'#efb949',coralSoft:'#ef725f',secondary:'#8295a3',protractor:'#b7c8d3',tickMajor:'#6e8494',tick:'#a8b8c4',topBg:'#f7fafc',bottomBg:'#f1f6f8',glass:'#cce7ef99',lens:'#d8f1f099'};
   let colors=makePalette();
   function line(x1,y1,x2,y2,color,width=2,dash=[]){ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.setLineDash([])}
@@ -30,7 +30,7 @@
   function rayHead(x,y,direction,color){ctx.beginPath();ctx.moveTo(x+direction*5,y);ctx.lineTo(x-direction*3,y-3);ctx.lineTo(x-direction*3,y+3);ctx.closePath();ctx.fillStyle=color;ctx.fill()}
   function vectorHead(x,y,dx,dy,color){const length=Math.hypot(dx,dy)||1,ux=dx/length,uy=dy/length,px=-uy,py=ux;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-ux*10+px*4,y-uy*10+py*4);ctx.lineTo(x-ux*10-px*4,y-uy*10-py*4);ctx.closePath();ctx.fillStyle=color;ctx.fill()}
   function lawArc(radius,start,end,color,anticlockwise){ctx.beginPath();ctx.arc(0,0,radius,start,end,anticlockwise);ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke()}
-  function animateRay(points,color){if(!state.animate||points.length<2)return;const lengths=[],total=points.slice(1).reduce((sum,p,i)=>{const a=points[i],length=Math.hypot(p[0]-a[0],p[1]-a[1]);lengths.push(length);return sum+length},0);let distance=phase*total;for(let i=0;i<lengths.length;i++){const length=lengths[i];if(distance<=length||i===lengths.length-1){const a=points[i],b=points[i+1],t=length?Math.min(1,distance/length):0;dot(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,color,4);break}distance-=length}}
+  function animateRay(points,color){if(!state.animate||points.length<2)return;const lengths=[],total=points.slice(1).reduce((sum,p,i)=>{const a=points[i],length=Math.hypot(p[0]-a[0],p[1]-a[1]);lengths.push(length);return sum+length},0);let distance=phase*total;for(let i=0;i<lengths.length;i++){const length=lengths[i];if(distance<=length||i===lengths.length-1){const a=points[i],b=points[i+1],t=length?Math.min(1,distance/length):0,rayColor=Array.isArray(color)?color[i]||color[0]:color;dot(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,rayColor,4);break}distance-=length}}
   function drawProtractor(){const radius=154,upperOnly=mode==='reflection';ctx.beginPath();if(upperOnly)ctx.arc(0,0,radius,Math.PI,Math.PI*2);else ctx.arc(0,0,radius,0,Math.PI*2);ctx.strokeStyle=colors.protractor;ctx.lineWidth=1;ctx.stroke();for(let deg=0;deg<360;deg+=2){if(upperOnly&&deg>180)continue;const rad=deg*Math.PI/180-Math.PI/2,major=deg%30===0,medium=deg%10===0,inner=radius-(major?13:medium?8:4);line(Math.sin(rad)*inner,-Math.cos(rad)*inner,Math.sin(rad)*radius,-Math.cos(rad)*radius,major?colors.tickMajor:colors.tick,major?1.3:.7)}for(let deg=0;deg<360;deg+=30){if(upperOnly&&deg>180)continue;const rad=deg*Math.PI/180-Math.PI/2,val=deg<=90?deg:deg<=180?180-deg:deg<=270?deg-180:360-deg;label(String(val),Math.sin(rad)*(radius-24),-Math.cos(rad)*(radius-24)+4,colors.ink)}}
   function drawLaw(){const angle=state.angle*Math.PI/180,rayLen=183,radius=154;
     ctx.fillStyle=colors.topBg;ctx.fillRect(-230,-210,460,210);ctx.fillStyle=mode==='reflection'?colors.topBg:colors.bottomBg;ctx.fillRect(-230,0,460,210);
@@ -44,7 +44,7 @@
       lawArc(39,-Math.PI/2,-Math.PI/2-angle,colors.gold,true);lawArc(39,-Math.PI/2,-Math.PI/2+angle,colors.coral,false);
       const lx=Math.sin(angle/2)*58,ly=-Math.cos(angle/2)*58;label(`θᵢ ${state.angle}°`,-lx,ly,colors.gold);label(`θᵣ ${state.angle}°`,lx,ly,colors.coral);
       dot(0,0,colors.ink,4);label('反射面',0,19,colors.muted);
-      animateRay([[sx,sy],[0,0],[rx,ry]],colors.gold);
+      animateRay([[sx,sy],[0,0],[rx,ry]],[colors.gold,colors.coral]);
       update([["入射角 θᵢ",`${state.angle}°`],["反射角 θᵣ",`${state.angle}°`],["角度關係",'θᵢ ＝ θᵣ'],["光路",'入射線與反射線']],'<b>反射定律：</b> 入射角等於反射角。<br>角度皆以法線為基準，鏡面上的入射線與反射線位於法線兩側。');
     }else{
       const n1=state.medium1,n2=state.medium2,sin2=n1*Math.sin(angle)/n2,tir=sin2>1,angle2=tir?null:Math.asin(Math.min(1,sin2)),r2=angle2??0;
@@ -53,16 +53,16 @@
       label(`${mediumNames[String(n1)]||'介質'} n₁=${n1.toFixed(2)}`,-95,-168,colors.muted,'left');label(`${mediumNames[String(n2)]||'介質'} n₂=${n2.toFixed(2)}`,-95,177,colors.muted,'left');
       if(!tir){const tx=Math.sin(r2)*rayLen,ty=Math.cos(r2)*rayLen;line(0,0,tx,ty,colors.blue,3);vectorHead(tx*.65,ty*.65,Math.sin(r2),Math.cos(r2),colors.blue);lawArc(39,Math.PI/2,Math.PI/2-r2,colors.blue,true);label(`θ₂ ${fmt(r2*180/Math.PI)}°`,Math.sin(r2/2)*60,Math.cos(r2/2)*60+5,colors.blue)}else{const rx=Math.sin(angle)*rayLen,ry=-Math.cos(angle)*rayLen;line(0,0,rx,ry,colors.coral,2.5);label('全反射',75,-25,colors.coral)}
       lawArc(39,-Math.PI/2,-Math.PI/2-angle,colors.gold,true);label(`θ₁ ${state.angle}°`,-Math.sin(angle/2)*60,-Math.cos(angle/2)*60,colors.gold);dot(0,0,colors.ink,4);
-      if(tir){const rx=Math.sin(angle)*rayLen,ry=-Math.cos(angle)*rayLen;animateRay([[sx,sy],[0,0],[rx,ry]],colors.gold)}else{const tx=Math.sin(r2)*rayLen,ty=Math.cos(r2)*rayLen;animateRay([[sx,sy],[0,0],[tx,ty]],colors.gold)}
+      if(tir){const rx=Math.sin(angle)*rayLen,ry=-Math.cos(angle)*rayLen;animateRay([[sx,sy],[0,0],[rx,ry]],[colors.gold,colors.coral])}else{const tx=Math.sin(r2)*rayLen,ty=Math.cos(r2)*rayLen;animateRay([[sx,sy],[0,0],[tx,ty]],[colors.gold,colors.blue])}
       const critical=n1>n2?Math.asin(n2/n1)*180/Math.PI:null;
       update([["入射角 θ₁",`${state.angle}°`],["折射角 θ₂",tir?'—':`${fmt(r2*180/Math.PI)}°`],["折射率 n₁ → n₂",`${n1.toFixed(2)} → ${n2.toFixed(2)}`],["光路狀態",tir?`全反射（臨界角 ${fmt(critical)}°）`:'折射']],`<b>折射定律：</b> n₁ sin θ₁ ＝ n₂ sin θ₂<br>${tir?'入射角大於臨界角，光線在介面發生全反射。':'角度由法線量起；選擇不同介質可比較折射方向。'}`);
     }
     label('入射光由左上方射向介面',0,-197,colors.muted);
   }
   function draw(){const dpr=window.devicePixelRatio||1,box=canvas.getBoundingClientRect();if(!box.width)return;canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,box.width,box.height);
-    const lawMode=mode==='reflection'||mode==='refraction',w=box.width,h=box.height,cx=w*.5,cy=h*(lawMode ? .52 : .57),scale=lawMode?Math.min((w-80)/430,(h-80)/410):Math.min((w-100)/430,(h-95)/250),s=scale||1;ctx.save();ctx.translate(cx,cy);ctx.scale(s,s);
+    const lawMode=mode==='reflection'||mode==='refraction',w=box.width,h=box.height,cx=w*.5,cy=h*(lawMode ? .5 : .57),scale=lawMode?Math.min((w-80)/430,(h-80)/410)*1.16:Math.min((w-100)/430,(h-95)/250),s=scale||1;ctx.save();ctx.translate(cx,cy);ctx.scale(s,s);
     if(lawMode){drawLaw();ctx.restore();return}
-    let animationPath=null;
+    let animationPath=null,secondaryAnimationPath=null,secondaryAnimationColor=colors.coral;
     for(let x=-210;x<=210;x+=42)line(x,-140,x,140,colors.grid,1);for(let y=-126;y<=126;y+=42)line(-215,y,215,y,colors.grid,1);
     line(-220,0,220,0,'#9aabb7',1.2);label('主光軸',195,17,colors.muted,'right');
     const u=state.distance*1.1,ho=state.height*.95, f=state.focal*1.1;
@@ -70,7 +70,7 @@
     if(mode==='plane'){
       line(mirrorX,-130,mirrorX,130,colors.cyan,4);for(let y=-120;y<=120;y+=16)line(mirrorX,y,mirrorX-9,y+10,colors.hatch,1.2);
       const ox=mirrorX-u,ix=mirrorX+u;arrow(ox,0,-ho,colors.coral,'物');arrow(ix,0,-ho,colors.blue,'像');
-      if(state.rays){for(const q of [.34,.67,1]){const rayY=-ho*q;line(ox,rayY,mirrorX,rayY,colors.gold,1.6);rayHead(mirrorX-4,rayY,1,colors.gold);rayHead(ox+u*.4,rayY,-1,colors.gold);line(mirrorX,rayY,ix,rayY,colors.goldSoft,1.4,[5,5]);dot(mirrorX,rayY,colors.gold,3)}animationPath=[[ox,-ho*.34],[mirrorX,-ho*.34]]}
+      if(state.rays){for(const q of [.34,.67,1]){const rayY=-ho*q;line(ox,rayY,mirrorX,rayY,colors.gold,1.6);rayHead(mirrorX-4,rayY,1,colors.gold);rayHead(ox+u*.4,rayY,-1,colors.gold);line(mirrorX,rayY,ix,rayY,colors.goldSoft,1.4,[5,5]);dot(mirrorX,rayY,colors.gold,3)}animationPath=[[ox,-ho*.34],[mirrorX,-ho*.34]];secondaryAnimationPath=[[mirrorX,-ho*.34],[ix,-ho*.34]];secondaryAnimationColor=colors.goldSoft}
       label('平面鏡',mirrorX,151,colors.cyan);label(`物距 ${state.distance}`,ox,22,colors.coral);label(`像距 ${state.distance}`,ix,22,colors.blue);
       update([["物距 u",`${state.distance} cm`],["像距 v",`${state.distance} cm`],["像高 h′",`${state.height} cm`],["放大率 m",'＋1.00']],'<b>平面鏡：</b> v ＝ u，像與物等大、正立，且為虛像。');
     } else if(mode==='convex-lens'||mode==='concave-lens'){
@@ -84,7 +84,7 @@
         line(ox,top,vertex,top,colors.gold,1.6);rayHead(vertex+4,top,1,colors.gold);
         if(converging&&!virtual){if(visibleImage)line(vertex,top,ix,iy,colors.gold,1.5);else line(vertex,top,endX,top+outSlope*(endX-vertex),colors.gold,1.5)}else{line(vertex,top,endX,top+outSlope*(endX-vertex),colors.gold,1.5);if(visibleImage)line(vertex,top,ix,iy,colors.goldSoft,1.4,[5,5])}const rayEndX=converging&&!virtual&&visibleImage?ix:endX,rayEndY=converging&&!virtual&&visibleImage?iy:top+outSlope*(endX-vertex);animationPath=[[ox,top],[vertex,top],[rayEndX,rayEndY]];
         line(ox,top,vertex,0,colors.coral,1.4);
-        if(visibleImage&&!virtual)line(vertex,0,ix,iy,colors.coral,1.5);else{const centerSlope=ho/u;line(vertex,0,endX,centerSlope*(endX-vertex),colors.coral,1.4);if(visibleImage)line(vertex,0,ix,iy,colors.coralSoft,1.4,[5,5])}
+        const centerSlope=ho/u,centerRayEndX=visibleImage&&!virtual?ix:endX,centerRayEndY=visibleImage&&!virtual?iy:centerSlope*(endX-vertex);if(visibleImage&&!virtual)line(vertex,0,ix,iy,colors.coral,1.5);else{line(vertex,0,endX,centerRayEndY,colors.coral,1.4);if(visibleImage)line(vertex,0,ix,iy,colors.coralSoft,1.4,[5,5])}secondaryAnimationPath=[[ox,top],[vertex,0],[centerRayEndX,centerRayEndY]];
         dot(vertex,top,colors.gold,3);dot(vertex,0,colors.coral,3);
       }
       label(`物距 ${state.distance}`,ox,22,colors.coral);if(visibleImage)label(`像距 ${fmt(Math.abs(v)/1.1)} cm`,ix,22,colors.blue);else label('像距超出圖示範圍',converging?-170:165,22,colors.blue);
@@ -107,7 +107,7 @@
         if(v>0&&visibleImage)line(p1,top,ix,iy,colors.gold,1.5);else{line(p1,top,endX,top+(endX-p1)*slope,colors.gold,1.5);if(visibleImage)line(p1,top,ix,iy,colors.goldSoft,1.4,[5,5])}const rayEndX=v>0&&visibleImage?ix:endX,rayEndY=v>0&&visibleImage?iy:top+(endX-p1)*slope;animationPath=[[ox,top],[p1,top],[rayEndX,rayEndY]];
         // Principal ray 2: through the vertex; its reflected path and backward extension meet at the image.
         line(ox,top,vertex,0,colors.coral,1.4);
-        if(visibleImage&&v>0)line(vertex,0,ix,iy,colors.coral,1.5);else{const endX=vertex-125,slope=Number.isFinite(v)?iy/(ix-vertex):0;line(vertex,0,endX,slope*(endX-vertex),colors.coral,1.4);if(visibleImage)line(vertex,0,ix,iy,colors.coralSoft,1.4,[5,5])}
+        const secondEndX=vertex-125,secondSlope=Number.isFinite(v)?iy/(ix-vertex):0,secondRayEndX=visibleImage&&v>0?ix:secondEndX,secondRayEndY=visibleImage&&v>0?iy:secondSlope*(secondEndX-vertex);if(visibleImage&&v>0)line(vertex,0,ix,iy,colors.coral,1.5);else{line(vertex,0,secondEndX,secondRayEndY,colors.coral,1.4);if(visibleImage)line(vertex,0,ix,iy,colors.coralSoft,1.4,[5,5])}secondaryAnimationPath=[[ox,top],[vertex,0],[secondRayEndX,secondRayEndY]];
         dot(vertex,top,colors.gold,3);dot(vertex,0,colors.coral,3);
       }else if(state.rays){const top=-ho;
         if(mode==='convex'){
@@ -116,11 +116,12 @@
           line(ox,top,p1,top,colors.gold,1.6);line(p1,top,endX,endY,colors.gold,1.5);line(p1,top,F,0,colors.goldSoft,1.4,[5,5]);
           // Ray 2: aimed toward F, reflected parallel to the axis; its extension reaches the virtual image.
           line(ox,top,p2,imageY,colors.coral,1.4);line(p2,imageY,endX,imageY,colors.coral,1.5);line(p2,imageY,ix,iy,colors.coralSoft,1.4,[5,5]);
-          animationPath=[[ox,top],[p1,top],[endX,endY]];dot(p1,top,colors.gold,3);dot(p2,imageY,colors.coral,3);
+          animationPath=[[ox,top],[p1,top],[endX,endY]];secondaryAnimationPath=[[ox,top],[p2,imageY],[endX,imageY]];dot(p1,top,colors.gold,3);dot(p2,imageY,colors.coral,3);
         }else{
           const rimX=vertex,focusRayY=top*(1-(rimX-ox)/(F-ox));
           line(ox,top,vertex,top,colors.gold,1.6);line(vertex,top,ix,iy,colors.gold,1.5);animationPath=[[ox,top],[vertex,top],[ix,iy]];
           line(ox,top,F,0,colors.coral,1.4);line(F,0,vertex,top,colors.coral,1.4);line(vertex,top,ix,iy,colors.coral,1.4);
+          secondaryAnimationPath=[[ox,top],[F,0],[vertex,top],[ix,iy]];
           if(u<f){line(ox,top,vertex,top,colors.gold,1.5);line(vertex,top,ix,iy,colors.gold,1.3);line(vertex,top,ix,iy,colors.coral,1.2,[5,5])}
           dot(vertex,top,colors.gold,3);
         }
@@ -130,7 +131,7 @@
       if(mode==='concave'){if(Math.abs(u-f)<.6)status='焦點上・像在無限遠';else if(u<f)status='正立・放大・虛像';else if(Math.abs(u-2*f)<.6)status='倒立・等大・實像';else if(u<2*f)status='倒立・放大・實像';else status='倒立・縮小・實像'}else status=virtual?'正立・虛像':'倒立・實像';
       update([["物距 u",`${state.distance} cm`],["像距 v",`${fmt(Math.abs(v)/1.1)} cm${virtual?'（虛）':''}`],["放大率 m",`${fmt(Math.abs(m))} ${m<0?'×（倒立）':'×'}`],["成像狀態",status]],`<b>鏡面公式：</b> 1／f ＝ 1／u ＋ 1／v<br><b>放大率：</b> m ＝ −v／u ＝ h′／h<br>焦距 f ＝ ${state.focal} cm`);
     }
-    if(animationPath)animateRay(animationPath,colors.gold);
+    if(animationPath)animateRay(animationPath,colors.gold);if(secondaryAnimationPath)animateRay(secondaryAnimationPath,secondaryAnimationColor);
     ctx.restore();
   }
   function fmt(n){return Number.isFinite(n)?(Math.abs(n)>=100?n.toFixed(0):n.toFixed(1)):'∞'}
