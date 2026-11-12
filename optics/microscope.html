@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f7fa">
+  <title>複式顯微鏡｜互動光學實驗室</title>
+  <link rel="stylesheet" href="optics.css">
+</head>
+<body data-mode="microscope">
+  <div class="shell">
+    <header>
+      <a class="brand" href="index.html"><span class="brand-mark">◉</span><span>互動光學實驗室</span></a>
+      <nav class="nav">
+        <a href="index.html">實驗首頁</a><a href="plane-mirror.html">平面鏡</a><a href="concave-mirror.html">凹面鏡</a><a href="convex-mirror.html">凸面鏡</a><a href="reflection-law.html">反射定律</a><a href="refraction-law.html">折射定律</a><a href="convex-lens.html">凸透鏡</a><a href="concave-lens.html">凹透鏡</a><a class="active" href="microscope.html">複式顯微鏡</a><a href="rgb-primary.html">光的三原色</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" title="切換為暗黑模式">☾ 暗黑模式</button>
+    </header>
+    <div class="eyebrow">COMPOUND MICROSCOPE</div>
+    <h1>複式顯微鏡成像</h1>
+    <p class="subtitle">調整物體位置與大小，觀察物鏡形成的中間像及目鏡放大的虛像。</p>
+    <main class="layout">
+      <section class="stage">
+        <div class="stage-top">
+          <span>雙透鏡光路示意圖</span>
+          <div class="legend"><span><i class="dot object"></i>物體</span><span><i class="dot ray"></i>中間像</span><span><i class="dot image"></i>最終虛像</span><span>金／紅：光線</span></div>
+        </div>
+        <canvas aria-label="複式顯微鏡物鏡、目鏡及成像光線示意圖"></canvas>
+        <span class="canvas-hint">使用右側滑桿調整物距與物高</span>
+      </section>
+      <aside class="panel" id="controls"></aside>
+    </main>
+    <section class="intro-card">
+      <span class="intro-icon">✦</span>
+      <div><strong>觀察重點</strong><p>物體放在物鏡焦點外側時，物鏡先形成倒立放大的實像；這個中間像位於目鏡焦點內，目鏡再形成放大的虛像。整體最後成像為倒立、放大的虛像。圖中的光線為近軸薄透鏡模型，焦距固定。</p></div>
+    </section>
+  </div>
+  <script src="theme.js"></script>
+  <script src="microscope.js"></script>
+</body>
+</html>
