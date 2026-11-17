@@ -67,7 +67,7 @@
     const scale=usable/(state.do+state.di+4), xHole=margin+state.do*scale, xObj=xHole-state.do*scale, xScreen=xHole+state.di*scale;
     const physicalHeight=Math.min(h*.29,state.h*scale*.48), imageHeight=physicalHeight*state.di/state.do;
     const objTop=cy-physicalHeight, imgTip=cy+imageHeight, holeR=clamp(state.hole*1.5,3,11);
-    view={width:w,height:h,scale,axis:cy,holeX:xHole,objX,screenX:xScreen,topY:objTop};
+    view={width:w,height:h,scale,axis:cy,holeX:xHole,objX:xObj,screenX:xScreen,topY:objTop};
     for(let x=margin;x<=w-margin;x+=Math.max(35,scale*5)){line(x,24,x,h-35,p.grid,1)}
     for(let y=cy-120;y<h-30;y+=40)line(margin,y,w-margin,y,p.grid,1);
     line(margin,cy,w-margin,cy,p.muted,1.6);
