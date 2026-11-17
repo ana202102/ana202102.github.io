@@ -19,7 +19,7 @@
 | `concave-lens.html` | 凹透鏡成像；鏡片上下對稱 |
 | `reflection-law.html` | 反射定律；上半圓量角器，可調入射角並顯示相關角度 |
 | `refraction-law.html` | 折射定律；可調入射角及兩側介質，包含全反射情況 |
-| `pinhole-camera.html` | 針孔成像；可調物距、像距、物高及孔徑，並可拖曳物體與屏幕 |
+| `pinhole-camera.html` | 針孔成像；Three.js 3D 模型，可調物距、像距、物高與孔徑，可拖曳物體／屏幕並切換視角 |
 | `microscope.html` | 複式顯微鏡；物體可拖曳，並可調物高及兩鏡焦距；依序顯示物鏡中間像與目鏡最終像 |
 | `rgb-primary.html` | 光的三原色；可調紅、綠、藍光強度，觀察加法混色 |
 
@@ -29,7 +29,7 @@
 - `optics.css`：共用版面、響應式排版、控制面板與明暗主題樣式。
 - `theme.js`：明暗模式切換及主題狀態同步。
 - `rgb-primary.js`：光的三原色頁面專用繪圖、RGB 強度控制、預設色光與色碼顯示。
-- `pinhole-camera.js`：針孔成像專用 Canvas 繪圖，提供物距、像距、物高、孔徑調整、物體／屏幕拖曳與光線動畫。
+- `pinhole-camera.js`：針孔成像專用 Three.js 3D 場景，繪製發光物體、針孔板、屏幕、光線軌跡與光錐；支援拖曳物體／屏幕、調整物距／像距／物高／孔徑及切換相機視角。
 - `microscope.js`：複式顯微鏡頁面專用光線繪圖，依薄透鏡公式更新中間像、最終像及成像數據；支援物體拖曳、物高與兩鏡焦距控制。
 - `README.md`：專案簡介與頁面列表。
 
@@ -48,7 +48,7 @@
 ## 後續更新方式
 
 1. 修改對應的 HTML、`optics.css`、`theme.js`、`optics.js`、`rgb-primary.js`、`microscope.js` 或 `pinhole-camera.js`。
-2. 確認各頁載入 CSS／JavaScript 的相對路徑正確；載入 `optics.js` 的頁面須使用它支援的 `data-mode`；複式顯微鏡與針孔成像則使用各自的專用 JavaScript。
+2. 確認各頁載入 CSS／JavaScript 的相對路徑正確；載入 `optics.js` 的頁面須使用它支援的 `data-mode`；複式顯微鏡使用 `microscope.js`，針孔成像使用 `pinhole-camera.js` 與 Three.js／OrbitControls CDN。
 3. 將變更同步至 `ana202102/ana202102.github.io` 的 `main` 分支 `optics/` 目錄。此網站是靜態網站，無需建置或安裝套件；更新 `main` 後由 GitHub Pages 發佈。
 4. 部署後開啟對應的 `https://ana202102.github.io/optics/<頁面檔名>` 確認畫面。瀏覽器或 Pages 快取可能需要重新整理才會顯示新版本。
 
@@ -61,7 +61,7 @@
 
 ## 最近完成的工作
 
-- 新增 `pinhole-camera.html` 與 `pinhole-camera.js`，首頁及各頁導覽列均有入口；可調物距、像距、物高與孔徑，拖曳物體或屏幕改變位置，並播放穿過針孔的光線動畫。
+- 新增 `pinhole-camera.html` 與 `pinhole-camera.js`，首頁及各頁導覽列均有入口；採 Three.js 3D 模型，可調物距、像距、物高與孔徑，拖曳物體或屏幕並旋轉視角觀察成像。
 
 - 新增 `microscope.html` 與 `microscope.js`，首頁及各頁導覽列均有入口；支援物體拖曳及調整物高、物鏡焦距與目鏡焦距。
 
@@ -74,6 +74,7 @@
 
 - 模擬由 Canvas 繪圖，沒有獨立的自動化測試或建置流程；後續若更動繪圖幾何，應在瀏覽器實際查看正常與暗黑模式，以及滑桿調整前後的光線和數值。
 - 量角器在反射定律頁為半圓；折射定律頁保留完整量角器與介質示意區。
+
 
 
 

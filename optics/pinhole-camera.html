@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#f2f7fa">
   <title>針孔成像｜互動光學實驗室</title>
   <link rel="stylesheet" href="optics.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/three@0.128.0/build/three.min.js';"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="this.onerror=null;this.src='https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js';"></script>
 </head>
 <body>
   <div class="shell">
@@ -18,27 +20,45 @@
     </header>
     <div class="eyebrow">PINHOLE CAMERA</div>
     <h1>針孔成像</h1>
-    <p class="subtitle">調整物距、像距與孔徑，觀察倒立實像如何形成。</p>
-    <main class="layout pinhole-layout">
-      <section class="stage pinhole-stage">
-        <div class="stage-top"><span>針孔成像光路示意圖</span><div class="legend"><span><i class="dot object"></i>物體</span><span><i class="dot image"></i>屏幕上的像</span><span><i class="dot ray"></i>光線</span></div></div>
-        <canvas id="pinhole-canvas" aria-label="針孔、物體、屏幕與倒立成像光線示意圖"></canvas>
-        <div class="pinhole-preview-card"><strong>屏幕正面預覽</strong><canvas id="pinhole-preview" aria-label="屏幕上的倒立影像"></canvas></div>
-        <span class="canvas-hint">可拖曳物體或屏幕移動；光線穿過針孔後交叉</span>
+    <p class="subtitle">拖曳物體與屏幕調整距離，旋轉 3D 視角觀察針孔成像。</p>
+    <main class="pinhole-page">
+      <section class="pinhole-viewport" id="three-container" aria-label="3D 針孔成像實驗台">
+        <div class="pinhole-overlay pinhole-instructions">
+          <strong>3D 互動操作</strong>
+          <span>拖曳物體或屏幕調整距離</span>
+          <span>拖曳空白處旋轉視角，滾輪縮放</span>
+        </div>
+        <div class="pinhole-overlay pinhole-legend">
+          <span><i class="vertex red"></i>左上</span><span><i class="vertex yellow"></i>右上</span><span><i class="vertex blue"></i>左下</span><span><i class="vertex green"></i>右下</span>
+        </div>
+        <div class="pinhole-overlay inset-card">
+          <strong>屏幕正面預覽</strong>
+          <div><canvas id="insetPreviewCanvas" aria-label="屏幕上的倒立影像"></canvas></div>
+          <small>上下顛倒・左右相反</small>
+        </div>
+        <div class="pinhole-hud">物距 <strong id="hud-do">20.0</strong> cm　｜　像距 <strong id="hud-di">16.0</strong> cm</div>
       </section>
-      <aside class="panel pinhole-panel">
-        <h2>實驗參數</h2>
-        <div class="control"><div class="control-head"><label for="ph-do">物距</label><strong id="ph-do-value">20.0 cm</strong></div><input id="ph-do" type="range" min="8" max="35" step="0.5" value="20"><div class="range-scale"><span>8 cm</span><span>35 cm</span></div></div>
-        <div class="control"><div class="control-head"><label for="ph-di">像距</label><strong id="ph-di-value">16.0 cm</strong></div><input id="ph-di" type="range" min="8" max="35" step="0.5" value="16"><div class="range-scale"><span>8 cm</span><span>35 cm</span></div></div>
-        <div class="control"><div class="control-head"><label for="ph-height">物高</label><strong id="ph-height-value">5.0 cm</strong></div><input id="ph-height" type="range" min="2" max="10" step="0.5" value="5"><div class="range-scale"><span>2 cm</span><span>10 cm</span></div></div>
-        <div class="control"><div class="control-head"><label for="ph-hole">針孔直徑</label><strong id="ph-hole-value">1.2 mm</strong></div><input id="ph-hole" type="range" min="0.5" max="6" step="0.1" value="1.2"><div class="range-scale"><span>小孔：較清晰</span><span>大孔：較明亮</span></div></div>
-        <div class="select-control"><label class="control-head" for="ph-letter">物體符號</label><select id="ph-letter"><option>F</option><option>R</option><option>P</option><option>K</option><option>G</option></select></div>
-        <div class="readouts"><div class="metric"><span>放大率　M = 像距 ÷ 物距</span><strong id="ph-mag">0.80 倍</strong></div><div class="metric"><span>像高</span><strong id="ph-image-height">4.00 cm</strong></div><div class="metric" style="grid-column:1/-1"><span>孔徑觀察</span><strong id="ph-quality">較清晰、較暗</strong></div></div>
-        <div class="formula">針孔成像為<strong>倒立實像</strong>。像高 ÷ 物高 = 像距 ÷ 物距；調整物距或像距會改變影像大小。</div>
-        <div class="button-row"><button class="button primary" id="ph-animate" type="button" aria-pressed="false">播放光線動畫</button><button class="button" id="ph-reset" type="button">重設</button></div>
-      </aside>
+      <section class="pinhole-metrics">
+        <article class="metric"><span>物距 dₒ</span><strong><b id="val-do">20.0</b> cm</strong><small>發光物體至針孔</small></article>
+        <article class="metric"><span>像距 dᵢ</span><strong><b id="val-di">16.0</b> cm</strong><small>針孔至屏幕</small></article>
+        <article class="metric"><span>放大率 M = dᵢ / dₒ</span><strong><b id="val-mag">0.80</b> 倍</strong><small id="val-size-desc">縮小像（hᵢ &lt; hₒ）</small></article>
+        <article class="metric"><span>成像性質</span><strong id="val-nature">倒立縮小實像</strong><small id="val-clarity">上下顛倒、左右相反（清晰）</small></article>
+      </section>
+      <section class="pinhole-controls">
+        <div class="pinhole-control-heading"><div><h2>實驗參數</h2><p>可用滑桿或直接拖曳 3D 物件調整</p></div>
+          <div class="camera-presets"><button id="cam-3d" class="cam-preset-btn active" type="button">斜視 3D</button><button id="cam-side" class="cam-preset-btn" type="button">側視光路</button><button id="cam-screen" class="cam-preset-btn" type="button">屏幕正面</button><button id="btn-reset" class="button" type="button">重設</button></div>
+        </div>
+        <div class="pinhole-control-grid">
+          <div class="pinhole-control-block"><label>發光物體字母</label><div class="letter-presets" id="letter-presets"><button data-char="F" class="letter-btn active" type="button">F</button><button data-char="R" class="letter-btn" type="button">R</button><button data-char="P" class="letter-btn" type="button">P</button><button data-char="K" class="letter-btn" type="button">K</button><button data-char="G" class="letter-btn" type="button">G</button><input id="custom-letter" type="text" maxlength="1" placeholder="自訂" aria-label="自訂字母"></div><small>選擇非對稱字母，觀察影像方向反轉。</small></div>
+          <div class="pinhole-control-block"><div class="control-head"><label for="slider-do">物距 dₒ</label><strong id="label-do">20.0 cm</strong></div><input id="slider-do" type="range" min="8" max="35" step="0.5" value="20"><div class="range-scale"><span>8 cm</span><span>35 cm</span></div></div>
+          <div class="pinhole-control-block"><div class="control-head"><label for="slider-di">像距 dᵢ</label><strong id="label-di">16.0 cm</strong></div><input id="slider-di" type="range" min="8" max="35" step="0.5" value="16"><div class="range-scale"><span>8 cm</span><span>35 cm</span></div></div>
+          <div class="pinhole-control-block"><div class="control-head"><label for="slider-height">物高</label><strong id="label-height">3.4 cm</strong></div><input id="slider-height" type="range" min="2" max="5" step="0.1" value="3.4"><div class="range-scale"><span>2 cm</span><span>5 cm</span></div></div>
+          <div class="pinhole-control-block"><div class="control-head"><label for="slider-hole">針孔直徑</label><strong id="label-hole">1.2 mm</strong></div><input id="slider-hole" type="range" min="0.5" max="6" step="0.1" value="1.2"><div class="range-scale"><span>小孔・較清晰</span><span>大孔・較明亮</span></div><small>大孔會讓更多光線通過，影像較亮但較模糊。</small></div>
+          <div class="pinhole-control-block pinhole-toggles"><label><input id="toggle-rays" type="checkbox" checked> 顯示光線軌跡</label><label><input id="toggle-cones" type="checkbox" checked> 顯示光錐與模糊效果</label></div>
+        </div>
+      </section>
+      <section class="intro-card"><span class="intro-icon">✦</span><div><strong>觀察重點</strong><p>物體各點發出的光線穿過針孔後交叉，在屏幕上形成上下顛倒、左右相反的實像。3D 模型顯示物體、針孔板、光線錐與屏幕投影；移動屏幕可改變像距。</p></div></section>
     </main>
-    <section class="intro-card"><span class="intro-icon">✦</span><div><strong>觀察重點</strong><p>物體上端的光線穿過針孔後到達屏幕下方，物體下端的光線則到達屏幕上方，因此屏幕上會形成上下顛倒的實像。針孔愈小，影像通常愈清晰但愈暗；孔徑太大時，多束光重疊會使影像模糊。</p></div></section>
   </div>
   <script src="theme.js"></script>
   <script src="pinhole-camera.js"></script>
