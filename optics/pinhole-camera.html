@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f7fa">
+  <title>針孔成像｜互動光學實驗室</title>
+  <link rel="stylesheet" href="optics.css">
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a class="brand" href="index.html"><span class="brand-mark">◉</span><span>互動光學實驗室</span></a>
+      <nav class="nav">
+        <a href="index.html">實驗首頁</a><a href="plane-mirror.html">平面鏡</a><a href="concave-mirror.html">凹面鏡</a><a href="convex-mirror.html">凸面鏡</a><a href="reflection-law.html">反射定律</a><a href="refraction-law.html">折射定律</a><a href="convex-lens.html">凸透鏡</a><a href="concave-lens.html">凹透鏡</a><a href="rgb-primary.html">光的三原色</a><a href="microscope.html">複式顯微鏡</a><a class="active" href="pinhole-camera.html">針孔成像</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" title="切換為暗黑模式">☾ 暗黑模式</button>
+    </header>
+    <div class="eyebrow">PINHOLE CAMERA</div>
+    <h1>針孔成像</h1>
+    <p class="subtitle">調整物距、像距與孔徑，觀察倒立實像如何形成。</p>
+    <main class="layout pinhole-layout">
+      <section class="stage pinhole-stage">
+        <div class="stage-top"><span>針孔成像光路示意圖</span><div class="legend"><span><i class="dot object"></i>物體</span><span><i class="dot image"></i>屏幕上的像</span><span><i class="dot ray"></i>光線</span></div></div>
+        <canvas id="pinhole-canvas" aria-label="針孔、物體、屏幕與倒立成像光線示意圖"></canvas>
+        <div class="pinhole-preview-card"><strong>屏幕正面預覽</strong><canvas id="pinhole-preview" aria-label="屏幕上的倒立影像"></canvas></div>
+        <span class="canvas-hint">可拖曳物體或屏幕移動；光線穿過針孔後交叉</span>
+      </section>
+      <aside class="panel pinhole-panel">
+        <h2>實驗參數</h2>
+        <div class="control"><div class="control-head"><label for="ph-do">物距</label><strong id="ph-do-value">20.0 cm</strong></div><input id="ph-do" type="range" min="8" max="35" step="0.5" value="20"><div class="range-scale"><span>8 cm</span><span>35 cm</span></div></div>
+        <div class="control"><div class="control-head"><label for="ph-di">像距</label><strong id="ph-di-value">16.0 cm</strong></div><input id="ph-di" type="range" min="8" max="35" step="0.5" value="16"><div class="range-scale"><span>8 cm</span><span>35 cm</span></div></div>
+        <div class="control"><div class="control-head"><label for="ph-height">物高</label><strong id="ph-height-value">5.0 cm</strong></div><input id="ph-height" type="range" min="2" max="10" step="0.5" value="5"><div class="range-scale"><span>2 cm</span><span>10 cm</span></div></div>
+        <div class="control"><div class="control-head"><label for="ph-hole">針孔直徑</label><strong id="ph-hole-value">1.2 mm</strong></div><input id="ph-hole" type="range" min="0.5" max="6" step="0.1" value="1.2"><div class="range-scale"><span>小孔：較清晰</span><span>大孔：較明亮</span></div></div>
+        <div class="select-control"><label class="control-head" for="ph-letter">物體符號</label><select id="ph-letter"><option>F</option><option>R</option><option>P</option><option>K</option><option>G</option></select></div>
+        <div class="readouts"><div class="metric"><span>放大率　M = 像距 ÷ 物距</span><strong id="ph-mag">0.80 倍</strong></div><div class="metric"><span>像高</span><strong id="ph-image-height">4.00 cm</strong></div><div class="metric" style="grid-column:1/-1"><span>孔徑觀察</span><strong id="ph-quality">較清晰、較暗</strong></div></div>
+        <div class="formula">針孔成像為<strong>倒立實像</strong>。像高 ÷ 物高 = 像距 ÷ 物距；調整物距或像距會改變影像大小。</div>
+        <div class="button-row"><button class="button primary" id="ph-animate" type="button" aria-pressed="false">播放光線動畫</button><button class="button" id="ph-reset" type="button">重設</button></div>
+      </aside>
+    </main>
+    <section class="intro-card"><span class="intro-icon">✦</span><div><strong>觀察重點</strong><p>物體上端的光線穿過針孔後到達屏幕下方，物體下端的光線則到達屏幕上方，因此屏幕上會形成上下顛倒的實像。針孔愈小，影像通常愈清晰但愈暗；孔徑太大時，多束光重疊會使影像模糊。</p></div></section>
+  </div>
+  <script src="theme.js"></script>
+  <script src="pinhole-camera.js"></script>
+</body>
+</html>
