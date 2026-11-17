@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f2f7fa">
   <title>針孔成像｜互動光學實驗室</title>
-  <link rel="stylesheet" href="optics.css?v=rays1">
+  <link rel="stylesheet" href="optics.css?v=readout1">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/three@0.128.0/build/three.min.js';"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="this.onerror=null;this.src='https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js';"></script>
 </head>
@@ -36,13 +36,12 @@
           <div><canvas id="insetPreviewCanvas" aria-label="屏幕上的倒立影像"></canvas></div>
           <small>上下顛倒・左右相反</small>
         </div>
-        <div class="pinhole-hud">物距 <strong id="hud-do">20.0</strong> cm　｜　像距 <strong id="hud-di">16.0</strong> cm</div>
       </section>
-      <section class="pinhole-metrics">
-        <article class="metric"><span>物距 dₒ</span><strong><b id="val-do">20.0</b> cm</strong><small>發光物體至針孔</small></article>
-        <article class="metric"><span>像距 dᵢ</span><strong><b id="val-di">16.0</b> cm</strong><small>針孔至屏幕</small></article>
-        <article class="metric"><span>放大率 M = dᵢ / dₒ</span><strong><b id="val-mag">0.80</b> 倍</strong><small id="val-size-desc">縮小像（hᵢ &lt; hₒ）</small></article>
-        <article class="metric"><span>成像性質</span><strong id="val-nature">倒立縮小實像</strong><small id="val-clarity">上下顛倒、左右相反（清晰）</small></article>
+      <section class="pinhole-metrics" aria-label="成像結果">
+        <div class="pinhole-readout"><span>物距 dₒ</span><strong><b id="val-do">20.0</b><small>cm</small></strong></div>
+        <div class="pinhole-readout"><span>像距 dᵢ</span><strong><b id="val-di">16.0</b><small>cm</small></strong></div>
+        <div class="pinhole-readout"><span>放大倍率</span><strong><b id="val-mag">0.80</b><small>倍</small></strong><small id="val-size-desc">縮小像（hᵢ &lt; hₒ）</small></div>
+        <div class="pinhole-readout pinhole-nature"><span>成像性質</span><strong id="val-nature">倒立縮小實像</strong><small id="val-clarity">上下顛倒、左右相反（清晰）</small></div>
       </section>
       <section class="pinhole-controls">
         <div class="pinhole-control-heading"><div><h2>實驗參數</h2><p>可用滑桿或直接拖曳 3D 物件調整</p></div>
@@ -61,7 +60,8 @@
     </main>
   </div>
   <script src="theme.js"></script>
-  <script src="pinhole-camera.js?v=rays1"></script>
+  <script src="pinhole-camera.js?v=readout1"></script>
 </body>
 </html>
+
 

@@ -51,8 +51,6 @@
             const valSizeDesc = document.getElementById('val-size-desc');
             const valNature = document.getElementById('val-nature');
             const valClarity = document.getElementById('val-clarity');
-            const hudDo = document.getElementById('hud-do');
-            const hudDi = document.getElementById('hud-di');
 
             const camBtn3D = document.getElementById('cam-3d');
             const camBtnSide = document.getElementById('cam-side');
@@ -866,8 +864,6 @@
                 valDo.textContent = state.do.toFixed(1);
                 valDi.textContent = state.di.toFixed(1);
                 valMag.textContent = mag.toFixed(2);
-                hudDo.textContent = state.do.toFixed(1);
-                hudDi.textContent = state.di.toFixed(1);
 
                 let sizeLabel = '';
                 if (Math.abs(mag - 1.0) < 0.03) {
