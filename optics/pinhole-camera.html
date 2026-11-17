@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f2f7fa">
   <title>針孔成像｜互動光學實驗室</title>
-  <link rel="stylesheet" href="optics.css?v=3d2">
+  <link rel="stylesheet" href="optics.css?v=rays1">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/three@0.128.0/build/three.min.js';"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" onerror="this.onerror=null;this.src='https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js';"></script>
 </head>
@@ -54,13 +54,14 @@
           <div class="pinhole-control-block"><div class="control-head"><label for="slider-di">像距 dᵢ</label><strong id="label-di">16.0 cm</strong></div><input id="slider-di" type="range" min="8" max="35" step="0.5" value="16"><div class="range-scale"><span>8 cm</span><span>35 cm</span></div></div>
           <div class="pinhole-control-block"><div class="control-head"><label for="slider-height">物高</label><strong id="label-height">3.4 cm</strong></div><input id="slider-height" type="range" min="2" max="5" step="0.1" value="3.4"><div class="range-scale"><span>2 cm</span><span>5 cm</span></div></div>
           <div class="pinhole-control-block"><div class="control-head"><label for="slider-hole">針孔直徑</label><strong id="label-hole">1.2 mm</strong></div><input id="slider-hole" type="range" min="0.5" max="6" step="0.1" value="1.2"><div class="range-scale"><span>小孔・較清晰</span><span>大孔・較明亮</span></div><small>大孔會讓更多光線通過，影像較亮但較模糊。</small></div>
-          <div class="pinhole-control-block pinhole-toggles"><label><input id="toggle-rays" type="checkbox" checked> 顯示光線軌跡</label><label><input id="toggle-cones" type="checkbox" checked> 顯示光錐與模糊效果</label></div>
+          <div class="pinhole-control-block pinhole-toggles"><label><input id="toggle-animation" type="checkbox" checked> 光線流動動畫</label><label><input id="toggle-rays" type="checkbox" checked> 顯示光線軌跡</label><label><input id="toggle-cones" type="checkbox" checked> 顯示光錐與模糊效果</label></div>
         </div>
       </section>
       <section class="intro-card"><span class="intro-icon">✦</span><div><strong>觀察重點</strong><p>物體各點發出的光線穿過針孔後交叉，在屏幕上形成上下顛倒、左右相反的實像。3D 模型顯示物體、針孔板、光線錐與屏幕投影；移動屏幕可改變像距。</p></div></section>
     </main>
   </div>
   <script src="theme.js"></script>
-  <script src="pinhole-camera.js?v=3d2"></script>
+  <script src="pinhole-camera.js?v=rays1"></script>
 </body>
 </html>
+

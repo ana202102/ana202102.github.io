@@ -16,6 +16,7 @@
                 holeSize: 1.2,      // 針孔直徑 (mm)
                 showRays: true,     // 顯示 3D 光線
                 showCones: true,    // 顯示光錐模糊束
+                animateRays: true,  // 顯示沿光路移動的光點
                 dragging: null,     // 'object' | 'screen' | null
                 hovered: null       // 'object' | 'screen' | null
             };
@@ -39,6 +40,7 @@
             const labelHole = document.getElementById('label-hole');
             const toggleRays = document.getElementById('toggle-rays');
             const toggleCones = document.getElementById('toggle-cones');
+            const toggleAnimation = document.getElementById('toggle-animation');
             const customLetterInput = document.getElementById('custom-letter');
             const letterBtns = document.querySelectorAll('.letter-btn');
             const btnReset = document.getElementById('btn-reset');
@@ -609,7 +611,16 @@
                 );
                 raysGroup.add(hitSpot);
 
-                rayObjects.push({ cfg, line, cone, hitSpot });
+                // 沿著物體 → 針孔 → 屏幕前進的發光光點
+                const particle = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.19, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: cfg.color })
+                );
+                particle.visible = false;
+                particle.userData.phaseOffset = rayObjects.length * 0.18;
+                raysGroup.add(particle);
+
+                rayObjects.push({ cfg, line, cone, hitSpot, particle });
             });
 
             function update3DRays() {
@@ -621,7 +632,7 @@
                 // 針孔孔徑在屏幕上形成的模糊光斑半徑 (Circle of Confusion)
                 const spotRadius = holeRadius * (1 + mag);
 
-                rayObjects.forEach(({ cfg, line, cone, hitSpot }) => {
+                rayObjects.forEach(({ cfg, line, cone, hitSpot, particle }) => {
                     // 物體頂點世界座標 (Z = +do)
                     const startPos = new THREE.Vector3(cfg.x, cfg.y, state.do);
                     // 針孔中心 (0, AXIS_Y, 0)
@@ -635,6 +646,8 @@
                         AXIS_Y - dy * mag,
                         -state.di
                     );
+                    particle.userData.path = { startPos, pinholePos, endPos };
+                    particle.visible = state.animateRays;
 
                     // 更新主光線折線頂點
                     const positions = line.geometry.attributes.position.array;
@@ -661,6 +674,23 @@
                         newConeGeo.translate(0, -dist / 2, 0);
                         newConeGeo.rotateX(Math.PI / 2);
                         cone.geometry = newConeGeo;
+                    }
+                });
+            }
+
+            function updateAnimatedParticles(timestamp) {
+                if (!state.showRays || !state.animateRays) return;
+                const seconds = timestamp / 1000;
+                rayObjects.forEach(({ particle }) => {
+                    const path = particle.userData.path;
+                    if (!path) return;
+                    const firstLength = path.startPos.distanceTo(path.pinholePos);
+                    const secondLength = path.pinholePos.distanceTo(path.endPos);
+                    const travelled = ((seconds / 7.5 + particle.userData.phaseOffset) % 1) * (firstLength + secondLength);
+                    if (travelled <= firstLength) {
+                        particle.position.lerpVectors(path.startPos, path.pinholePos, travelled / firstLength);
+                    } else {
+                        particle.position.lerpVectors(path.pinholePos, path.endPos, (travelled - firstLength) / secondLength);
                     }
                 });
             }
@@ -1038,6 +1068,11 @@
                 updateAll();
             });
 
+            toggleAnimation.addEventListener('change', (e) => {
+                state.animateRays = e.target.checked;
+                updateAll();
+            });
+
             function setActiveLetter(char) {
                 const cleanChar = (char || 'F').trim().charAt(0).toUpperCase() || 'F';
                 state.char = cleanChar;
@@ -1076,8 +1111,10 @@
                 state.holeSize = 1.2;
                 state.showRays = true;
                 state.showCones = true;
+                state.animateRays = true;
                 toggleRays.checked = true;
                 toggleCones.checked = true;
+                toggleAnimation.checked = true;
                 customLetterInput.value = '';
 
                 rebuildPinholeBarrier();
@@ -1109,6 +1146,7 @@
                 }
 
                 controls.update();
+                updateAnimatedParticles(performance.now());
                 renderer.render(scene, camera);
             }
 
