@@ -8,7 +8,7 @@
   const state = { ...defaults, rays: true, animate: false };
   const eyeX = -7.5;
   const objectiveX = 9;
-  const units = 12;
+  let units = 12;
   const distanceMax = 10;
   const specs = {
     distance: [0, distanceMax, defaults.distance, 0.01, '物距 uₒ'],
@@ -214,6 +214,31 @@
     const dpr = window.devicePixelRatio || 1;
     const box = canvas.getBoundingClientRect();
     if (!box.width) return;
+    const objectiveFocal = state.objectiveFocal;
+    const eyepieceFocal = state.eyepieceFocal;
+    const objectDistance = state.distance;
+    const imageDistance = objectDistance * objectiveFocal / (objectDistance - objectiveFocal);
+    const intermediateXcm = objectiveX - imageDistance;
+    const intermediateHeightCm = state.height * imageDistance / objectDistance;
+    const eyepieceObjectDistance = intermediateXcm - eyeX;
+    const focusDifference = eyepieceFocal - eyepieceObjectDistance;
+    const atEyepieceFocus = Math.abs(focusDifference) < 0.05;
+    const eyepieceImageDistance = atEyepieceFocus ? Infinity : -eyepieceFocal * eyepieceObjectDistance / focusDifference;
+    const eyepieceMagnification = atEyepieceFocus ? Infinity : -eyepieceImageDistance / eyepieceObjectDistance;
+    const finalXcm = atEyepieceFocus ? NaN : eyeX - eyepieceImageDistance;
+    const finalHeightCm = atEyepieceFocus ? Infinity : intermediateHeightCm * eyepieceMagnification;
+    const objectXcm = objectiveX + objectDistance;
+    const horizontalExtent = Math.max(
+      Math.abs(eyeX), Math.abs(objectiveX), Math.abs(objectXcm), Math.abs(intermediateXcm),
+      Number.isFinite(finalXcm) ? Math.abs(finalXcm) : 0,
+      Math.abs(objectiveX - objectiveFocal), Math.abs(eyeX + eyepieceFocal)
+    );
+    const verticalExtent = Math.max(
+      state.height, Math.abs(intermediateHeightCm), Number.isFinite(finalHeightCm) ? Math.abs(finalHeightCm) : 0
+    );
+    // Fit the object and both images together, using one shared scale so their
+    // displayed heights continue to match the calculated magnification.
+    units = Math.max(5, Math.min(14, 184 / horizontalExtent, 94 / verticalExtent));
     canvas.width = Math.round(box.width * dpr);
     canvas.height = Math.round(box.height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -232,23 +257,14 @@
 
     const eye = eyeX * units;
     const objective = objectiveX * units;
-    const objectiveFocal = state.objectiveFocal;
-    const eyepieceFocal = state.eyepieceFocal;
     const fObject = objectiveFocal * units;
-    const objectDistance = state.distance;
     const objectHeight = state.height * units;
     const objectX = objective + objectDistance * units;
     const objectTop = -objectHeight;
-    const imageDistance = objectDistance * objectiveFocal / (objectDistance - objectiveFocal);
     const intermediateX = objective - imageDistance * units;
-    const intermediateHeight = objectHeight * imageDistance / objectDistance;
-    const eyepieceObjectDistance = (intermediateX - eye) / units;
-    const focusDifference = eyepieceFocal - eyepieceObjectDistance;
-    const atEyepieceFocus = Math.abs(focusDifference) < 0.05;
-    const eyepieceImageDistance = atEyepieceFocus ? Infinity : -eyepieceFocal * eyepieceObjectDistance / focusDifference;
-    const eyepieceMagnification = atEyepieceFocus ? Infinity : -eyepieceImageDistance / eyepieceObjectDistance;
+    const intermediateHeight = intermediateHeightCm * units;
     const finalX = atEyepieceFocus ? NaN : eye - eyepieceImageDistance * units;
-    const finalHeight = atEyepieceFocus ? Infinity : intermediateHeight * eyepieceMagnification;
+    const finalHeight = finalHeightCm * units;
     const totalMagnification = atEyepieceFocus ? Infinity : -imageDistance / objectDistance * eyepieceMagnification;
     const virtualImage = atEyepieceFocus || eyepieceImageDistance < 0;
     const imageMagnification = Math.abs(totalMagnification);
@@ -267,7 +283,7 @@
     }
     arrow(objectX, objectTop, colors.coral, '物體', scale);
     imageArrow(intermediateX, intermediateHeight, colors.intermediate, '中間像', scale);
-    const finalVisible = !atEyepieceFocus && Number.isFinite(finalX) && Number.isFinite(finalHeight) && Math.abs(finalX) < 205 && Math.abs(finalHeight) < 120;
+    const finalVisible = !atEyepieceFocus && Number.isFinite(finalX) && Number.isFinite(finalHeight) && Math.abs(finalX) < 205 && Math.abs(finalHeight) < 112;
     if (finalVisible) imageArrow(finalX, finalHeight, colors.blue, virtualImage ? '最終虛像' : '最終實像', scale);
     else label(atEyepieceFocus ? '像在無限遠' : '最終像超出圖示範圍', eye, -116, colors.blue, 'center', scale);
 
@@ -348,3 +364,4 @@
   draw();
   requestAnimationFrame(frame);
 })();
+
