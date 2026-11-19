@@ -175,7 +175,7 @@
     ctx.strokeStyle = colors.cyan;
     ctx.lineWidth = 3;
     ctx.stroke();
-    label(title, x, 116, colors.cyan, 'center', scale);
+    label(title, x, lensHeight + 16, colors.cyan, 'center', scale);
   }
   function imageArrow(x, height, color, text, scale) {
     arrow(x, height, color, text, scale);
@@ -271,8 +271,8 @@
     const sizeStatus = imageMagnification > 1.05 ? '放大' : imageMagnification < 0.95 ? '縮小' : '等大';
     const status = atEyepieceFocus ? '目鏡出射光平行，像在無限遠' : (totalMagnification < 0 ? '倒立' : '正立') + '・' + sizeStatus + '・' + (virtualImage ? '虛像' : '實像');
 
-    lens(eye, '目鏡', scale, 11, 136);
-    lens(objective, '物鏡', scale, 8, 110);
+    lens(eye, '目鏡', scale, 0.45 * units, 4.5 * units);
+    lens(objective, '物鏡', scale, 0.35 * units, 3.5 * units);
     dot(objective - fObject, 0, colors.gold, 4);
     label('Fₒ', objective - fObject, 18, colors.gold, 'center', scale);
     label('fₒ ' + objectiveFocal.toFixed(1) + ' cm', objective - fObject, 35, colors.muted, 'center', scale);
